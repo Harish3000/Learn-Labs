@@ -1,0 +1,31 @@
+# Ignore the build outputs from next-app
+next-app/.next/
+next-app/out/
+next-app/build/
+
+# Ignore node_modules in next-app
+next-app/node_modules/
+
+# Ignore log files in next-app
+next-app/*.log
+
+# Ignore local environment variables in next-app
+next-app/.env
+next-app/.env.local
+next-app/.env.development.local
+next-app/.env.test.local
+next-app/.env.production.local
+
+# Ignore npm-debug logs in next-app
+next-app/npm-debug.log*
+next-app/yarn-debug.log*
+next-app/yarn-error.log*
+
+# Ignore IDE specific files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Ignore macOS files
+.DS_Store
