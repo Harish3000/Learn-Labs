@@ -1,11 +1,11 @@
 import React from "react";
+import {Chatbot} from "../../../components/component/chatbot";
 
 const IntelliNotes = () => {
   return (
-    <div>
-      <h1>Intelli notes</h1>
-      <p>This is where sushi tamaku creates notes.</p>
-    </div>
+    <main className="flex items-center justify-center h-screen w-full bg-gray-50">
+      <Chatbot />
+    </main>
   );
 };
 
