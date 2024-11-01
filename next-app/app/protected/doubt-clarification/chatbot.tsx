@@ -14,10 +14,10 @@ const ChatBotComponent: FC = () => {
   return (
     <div className="fixed right-4 bottom-16 w-80 h-[90vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col">
       <div className="bg-gray-900 text-white text-lg font-semibold p-4 rounded-t-lg">
-        Chat Bot
+        Live Doubt Clarification
       </div>
       <div className="flex-1 p-4 overflow-y-auto space-y-2 text-white">
-        {/* Messages will appear here */}
+        {/*doubt clarify will appear here */}
       </div>
       <div className="flex p-4 border-t border-gray-700">
         <input
