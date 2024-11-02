@@ -1,5 +1,5 @@
 import React from "react";
-import {Chatbot} from "../../../components/component/chatbot";
+import { Chatbot } from "../../../components/component/chatbot";
 
 const IntelliNotes = () => {
   return (
