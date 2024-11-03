@@ -6,9 +6,7 @@ const Admin = async () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-white">
-        Only admin can view this page 😎
-      </h1>
+      <h1 className="text-3xl font-bold">Only admin can view this page 😎</h1>
       <p>Welcome, {user.email}</p>
       <br />
       <br />

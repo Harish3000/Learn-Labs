@@ -1,8 +1,8 @@
 const UnauthorizedPage = () => {
   return (
     <div className="h-[600px] flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-bold text-white">⚠️Unauthorized</h1>
-      <p className="mt-2 text-md text-white">
+      <h1 className="text-3xl font-bold">⚠️Unauthorized</h1>
+      <p className="mt-2 text-md ">
         You do not have permission to access this page.
       </p>
       <br />
