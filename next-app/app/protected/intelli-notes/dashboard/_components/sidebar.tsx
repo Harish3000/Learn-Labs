@@ -18,10 +18,10 @@ export default function Sidebar() {
   // };
 
   return (
-    <div className="fixed left-0 top-16 bottom-20 z-40 w-64 overflow-y-auto border-r bg-background p-4 shadow-lg">
+    <div className="fixed left-0 top-0 bottom-0 z-40 w-64 overflow-y-auto border-r bg-background p-4 shadow-lg">
       <div className="flex flex-col h-full">
         <div className="flex-grow space-y-6">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-left">
             <Image
               src={chatImage}
               alt="Logo"
@@ -34,7 +34,7 @@ export default function Sidebar() {
             </p>
           </div>
           <UploadPdfDialog>
-              <Button className="w-full gap-2">
+              <Button className="w-full gap-2 m-5">
                 <Upload className="h-4 w-4" /> Upload PDF
               </Button>
           </UploadPdfDialog>

@@ -11,12 +11,16 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
+import { Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "convex/react";
+import { useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Loader2Icon } from "lucide-react";
+import { v4 as uuid4 } from "uuid";
+// import { useUser } from "@clerk/nextjs";
+import axios from "axios";
 
 interface UploadPdfDialogProps {
   children: ReactNode;
@@ -24,10 +28,15 @@ interface UploadPdfDialogProps {
 
 const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children }) => {
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
-  const InsertFileEntry = useMutation();
+  const addFileEntry = useMutation(api.storage.AddFileEntryToDb);
+  const getFileUrl = useMutation(api.storage.getFileUrl);
+  // const user =useUser();
+  const embeddDocument = useAction(api.myAction.ingest);
 
   const [file, setFile] = React.useState<File | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [fileName, setFileName] = React.useState("");
+  const [open, setOpen] = React.useState(false);
 
   const OnFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -54,13 +63,39 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children }) => {
     }
     const { storageId } = await result.json();
     console.log("storageId", storageId);
+
+    const fileId = uuid4();
+    const fileUrl = await getFileUrl({ storageId: storageId });
+    const response = await addFileEntry({
+      fileId: fileId,
+      storageId: storageId,
+      fileName: fileName ?? "Untitled",
+      fileUrl: fileUrl ?? "",
+      createdBy: "user.id",
+      createdAt: new Date().toISOString()
+    });
+    console.log("response", response);
+
+    //API call to fetch PDF process Data
+    const ApiResp = await axios.get(
+      "/protected/api/pdf-loader?pdfUrl=" + fileUrl
+    );
+    console.log("ApiResp", ApiResp.data.result);
+    await embeddDocument({
+      splitText: ApiResp.data.result,
+      fileId: fileId
+    });
+    // console.log(embeddResult);
     setLoading(false);
+    setOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={open}>
       <DialogTrigger asChild>
-        <Button>{children}</Button>
+        <Button onClick={() => setOpen(true)} className="w-full gap-2">
+          <Upload className="h-4 w-4" /> Upload PDF
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -77,7 +112,10 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children }) => {
               </div>
               <div className="mt-2">
                 <label>File Name *</label>
-                <Input placeholder="File Name" />
+                <Input
+                  placeholder="File Name"
+                  onChange={(e) => setFileName(e.target.value)}
+                />
               </div>
             </div>
           </DialogDescription>
@@ -88,7 +126,7 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children }) => {
               Close
             </Button>
           </DialogClose>
-          <Button onClick={OnUpload}>
+          <Button onClick={OnUpload} disabled={loading}>
             {loading ? <Loader2Icon className="animate-spin" /> : "Upload"}
           </Button>
         </DialogFooter>
