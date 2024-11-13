@@ -1,6 +1,7 @@
 // app/active-learning/page.tsx
 import React from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const ActiveLearning = () => {
   return (
@@ -15,7 +16,9 @@ const ActiveLearning = () => {
         <button className="mt-4 bg-red-500 text-white px-4 py-2 rounded">
           Go to Admin Only Page
         </button>
+       
       </Link>
+      <Button>Create New course</Button>
     </div>
   );
 };
