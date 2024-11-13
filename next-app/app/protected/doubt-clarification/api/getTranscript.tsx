@@ -44,11 +44,11 @@ export default async function handler(
   const video_id = "xRiwgtdyjQk"; // Hard-coded value for testing
 
   try {
-    // Step 1: Fetch the transcript
-    const response = await fetch(
-      `http://localhost:8000/transcript/${video_id}`
+    // Step 1: Call FastAPI to fetch the transcript
+    const fastApiResponse = await fetch(
+      `http://127.0.0.1:8000/transcript/${video_id}`
     );
-    const { transcript } = await response.json();
+    const { transcript } = await fastApiResponse.json();
 
     if (!transcript) {
       return res.status(404).json({ error: "Transcript not found" });
@@ -59,17 +59,21 @@ export default async function handler(
 
     // Step 3: Generate embeddings for each chunk and store in Supabase
     const embeddings = await Promise.all(
-      chunks.map(async (chunk) => {
+      chunks.map(async (chunk, index) => {
         const embedding = await generateEmbedding(chunk);
 
-        // Insert each embedding into Supabase
-        const { data, error } = await supabase.from("embeddings").insert([
-          {
-            video_id,
-            chunk,
-            embedding,
-          },
-        ]);
+        // Insert each chunk and embedding into Supabase
+        const { data, error } = await supabase
+          .from("transcript_chunks_test")
+          .insert([
+            {
+              video_id,
+              start_time: index * 10, // Adjust start time logic as needed
+              text: chunk,
+              embedding,
+              chunk_sequence: index + 1, // Order of chunk in the transcript
+            },
+          ]);
 
         if (error) {
           throw new Error(
