@@ -2,10 +2,17 @@ import React from "react";
 
 const CollabSummary = () => {
   return (
-    <div>
-      <h1>Collaborative summary</h1>
-      <p>This is where codevus discuss and give summaries.</p>
-    </div>
+    //<div className="w-full h-screen">
+      //<section className="bg-gray-950 text-white">
+        //<div className="mx-auto max-w-screen-xl px-4 py-32 flex-col gap-24 flex h-screen items-center">
+          //<h1>Next JS</h1>
+          //{/* Image */}
+        //</div>
+
+      //</section>
+      
+    //</div>
+    <div></div>
   );
 };
 
