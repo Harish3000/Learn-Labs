@@ -1,3 +1,5 @@
+import { TaskType } from "@google/generative-ai";
+import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { createClient } from "@supabase/supabase-js";
 import type { NextApiRequest, NextApiResponse } from "next";
 
@@ -7,10 +9,17 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// Function to split transcript into chunks
+// Initialize LangChain Google Embeddings
+const embeddings = new GoogleGenerativeAIEmbeddings({
+  model: "text-embedding-004", // Use the text-embedding-004 model (768 dimensions)
+  taskType: TaskType.RETRIEVAL_DOCUMENT,
+  title: "Document title",
+});
+
+// Function to split transcript into chunks based on token limit
 const splitTextIntoChunks = (
   text: string,
-  chunkSize: number = 300
+  chunkSize: number = 500
 ): string[] => {
   const chunks = [];
   for (let i = 0; i < text.length; i += chunkSize) {
@@ -19,21 +28,13 @@ const splitTextIntoChunks = (
   return chunks;
 };
 
-// Function to generate embeddings using Google Gemini API
+// Function to generate embeddings using LangChain's GoogleGenerativeAIEmbeddings
 const generateEmbedding = async (text: string) => {
-  const response = await fetch("https://api.google.com/gemini/v1/embed", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.GOOGLE_GEMINI_API_KEY}`,
-    },
-    body: JSON.stringify({ text }),
-  });
-
-  if (!response.ok) throw new Error("Failed to generate embedding");
-
-  const data = await response.json();
-  return data.embedding; // Adjust based on actual response structure
+  const embedding = await embeddings.embedDocuments([text]);
+  if (!embedding || !embedding[0]) {
+    throw new Error("Failed to generate embedding");
+  }
+  return embedding[0];
 };
 
 // Main API route handler
@@ -41,10 +42,18 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const video_id = "xRiwgtdyjQk"; // Hard-coded value for testing
+  // Extract lecture and video metadata from the request, e.g., video_id and lecture_id
+  // const video_id = "xRiwgtdyjQk";
+  const { video_id, lecture_id } = req.query;
+
+  if (!video_id || !lecture_id) {
+    return res
+      .status(400)
+      .json({ error: "video_id and lecture_id are required" });
+  }
 
   try {
-    // Step 1: Call FastAPI to fetch the transcript
+    // Step 1: Call external API to fetch the transcript
     const fastApiResponse = await fetch(
       `http://127.0.0.1:8000/transcript/${video_id}`
     );
@@ -57,21 +66,23 @@ export default async function handler(
     // Step 2: Split transcript into smaller chunks
     const chunks = splitTextIntoChunks(transcript);
 
-    // Step 3: Generate embeddings for each chunk and store in Supabase
+    // Step 3: Generate embeddings and insert each chunk into Supabase
     const embeddings = await Promise.all(
       chunks.map(async (chunk, index) => {
+        // Generate embedding for the transcript chunk
         const embedding = await generateEmbedding(chunk);
 
-        // Insert each chunk and embedding into Supabase
+        // Insert each chunk and embedding into the `transcript_chunks` table
         const { data, error } = await supabase
           .from("transcript_chunks_test")
           .insert([
             {
               video_id,
-              start_time: index * 10, // Adjust start time logic as needed
+              lecture_id,
+              start_time: index * 10,
               text: chunk,
               embedding,
-              chunk_sequence: index + 1, // Order of chunk in the transcript
+              chunk_sequence: index + 1,
             },
           ]);
 
