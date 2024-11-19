@@ -3,7 +3,7 @@
 import useUser from "../../../hooks/colab-summary/useUser";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-// import { v4 as uuid } from "uuid";
+import { v4 as uuid } from "uuid";
 
 export default function Home() {
   const { fullName, setFullName } = useUser();
@@ -51,7 +51,7 @@ export default function Home() {
                   />
                   <button
                     className="rounded-md bg-blue-600 px-10 py-[11px] text-sm font-medium text-white focus:outline-none sm:w-auto"
-                    onClick={() => router.push(`/room/${roomID}`)}
+                    onClick={() => router.push(`/protected/colab-summary/room/${roomID}`)}
                     disabled={!roomID}
                   >
                     Join
@@ -60,7 +60,7 @@ export default function Home() {
                 <div className="mt-4 flex items-center justify-center">
                   <button
                     className="text-lg font-medium hover:text-blue-400 hover:underline"
-                    onClick={() => router.push(`/room/${uuid()}`)}
+                    onClick={() => router.push(`/protected/colab-summary/room/${uuid()}`)}
                   >
                     Or create a new meeting
                   </button>
