@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react'
+import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createChaptersSchema } from "@/validators/course";
 import { useForm } from "react-hook-form";
@@ -12,27 +12,26 @@ import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Plus, Trash } from "lucide-react";
 
-
 type Input = z.infer<typeof createChaptersSchema>;
 
 const CreateCourseForm = () => {
-    const form = useForm<Input>({
-        resolver: zodResolver(createChaptersSchema),
-        defaultValues: {
-          title: "",
-          units: ["", "", ""],
-        },
-      });
+  const form = useForm<Input>({
+    resolver: zodResolver(createChaptersSchema),
+    defaultValues: {
+      title: "",
+      units: ["", "", ""],
+    },
+  });
 
-      function onSubmit(data: Input) {
-        console.log(data);
-      }
+  function onSubmit(data: Input) {
+    console.log(data);
+  }
 
-form.watch();
+  form.watch();
   return (
     <div className="w-full">
-           <Form {...form}>
-           <form onSubmit={form.handleSubmit(onSubmit)} className="w-full mt-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="w-full mt-4">
           <FormField
             control={form.control}
             name="title"
@@ -50,7 +49,7 @@ form.watch();
               );
             }}
           />
-                    <AnimatePresence>
+          <AnimatePresence>
             {form.watch("units").map((_, index) => {
               return (
                 <motion.div
@@ -117,10 +116,10 @@ form.watch();
             </div>
             <Separator className="flex-[1]" />
           </div>
-               </form>
-           </Form>
+        </form>
+      </Form>
     </div>
-  )
-}
+  );
+};
 
-export default CreateCourseForm
+export default CreateCourseForm;
