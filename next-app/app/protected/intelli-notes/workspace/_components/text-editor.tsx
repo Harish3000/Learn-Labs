@@ -18,7 +18,6 @@ import Code from "@tiptap/extension-code";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 
-
 const TextEditor: React.FC = () => {
   const editor = useEditor({
     extensions: [
@@ -35,7 +34,7 @@ const TextEditor: React.FC = () => {
         nested: true
       }),
       ListKeymap,
-     Code,
+      Code,
       TextAlign.configure({
         types: ["heading", "paragraph"]
       }),

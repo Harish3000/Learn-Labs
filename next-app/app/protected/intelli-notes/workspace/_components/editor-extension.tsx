@@ -9,20 +9,18 @@ import {
   Heading2,
   Highlighter,
   Italic,
-  List,
   Code,
   Strikethrough,
   Subscript,
   Superscript,
   Underline,
-  Star,
   SquareCheckBigIcon,
   AtomIcon
 } from "lucide-react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
-// import { chatSession } from "@/configs/ai-model";
+import { chatSession } from "@/configs/ai-model";
 
 interface EditorExtensionProps {
   editor: any;
@@ -46,22 +44,28 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
     });
 
     console.log("unformatted answer", result);
-    // const UnformattedAns = JSON.parse(result);
-    // let AllUnformattedAns = "";
-    // UnformattedAns &&
-    //   UnformattedAns.forEach((item: { pageContent: string }) => {
-    //     AllUnformattedAns = AllUnformattedAns + item.pageContent;
-    //   });
+    const UnformattedAns = JSON.parse(result);
+    let AllUnformattedAns = "";
+    UnformattedAns &&
+      UnformattedAns.forEach((item: { pageContent: string }) => {
+        AllUnformattedAns = AllUnformattedAns + item.pageContent;
+      });
 
-    // const PROMPT =
-    //   "For question:" +
-    //   selectedText +
-    //   "and with the given  content as answer," +
-    //   "please give appropriate answer in HTML format. The answer content is:" +
-    //   AllUnformattedAns;
+    const PROMPT =
+      "For question:" +
+      selectedText +
+      "and with the given  content as answer," +
+      "please give appropriate answer in HTML format. The answer content is:" +
+      AllUnformattedAns;
 
-    // const AiModelResult = await chatSession.sendMessage(PROMPT);
-    // console.log(AiModelResult.response.text());
+    const AiModelResult = await chatSession.sendMessage(PROMPT);
+    console.log(AiModelResult.response.text());
+    const FinalAns = AiModelResult.response.text();
+
+    const AllText = editor.getHTML();
+    editor.commands.setContent(
+      AllText + "<p><strong> Answer :</strong>" + FinalAns + "</p>"
+    );
   };
   return (
     editor && (

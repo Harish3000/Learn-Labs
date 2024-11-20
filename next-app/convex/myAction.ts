@@ -14,10 +14,13 @@ export const ingest = action({
         splitText: v.any(),
         fileId : v.string(),
   },
-  handler: async (ctx, args:IngestArgs) => {
+  handler: async (ctx, args: IngestArgs) => {
+      const metadataArray = args.splitText.map(() => ({
+      fileId: args.fileId  // Single fileId instead of split characters
+    }));
     await ConvexVectorStore.fromTexts(
-      args.splitText,//array
-      args.fileId, //string
+      args.splitText,
+     metadataArray, 
       new GoogleGenerativeAIEmbeddings({
       apiKey: 'AIzaSyD01IOfTQfBBpgPvYT0YCU_cAVKJGwPOSs',
       model: "text-embedding-004", // 768 dimensions
@@ -44,8 +47,35 @@ export const search = action({
       title: "Document title",
     }), { ctx });
 
-    const resultOne = (await vectorStore.similaritySearch(args.query, 1)).filter(q=>q.metadata.fileId==args.fileId);
-    console.log(resultOne);
-    return JSON.stringify(resultOne);
+    // const resultOne = (await vectorStore.similaritySearch(args.query, 1)).filter(q=>q.metadata.fileId == args.fileId);
+    // console.log(resultOne);
+    // return JSON.stringify(resultOne);
+
+    // chat gpt
+//     const resultOne = await vectorStore.similaritySearch(args.query, 1);
+    // console.log("Unfiltered Results:", resultOne);
+
+
+    
+ // Perform the similarity search
+    const results = await vectorStore.similaritySearch(args.query, 1);
+    
+    // Filter results to only include documents with matching fileId
+    const filteredResults = results.filter(doc => doc.metadata.fileId === args.fileId);
+    
+    // Format the response to match the desired structure
+    const formattedResponse = filteredResults.map(doc => ({
+      pageContent: doc.pageContent,
+      metadata: {
+        fileId: doc.metadata.fileId
+      }
+    }));
+
+    return JSON.stringify(formattedResponse);
+
+
+
+
+
   },
 });

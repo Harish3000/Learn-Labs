@@ -12,11 +12,11 @@ const Workspace: React.FC = () => {
   const { fileId } = params;
 
   // Ensure useQuery is typed to return a FileInfo or undefined
-  const GetFileRecord = useQuery(api.storage.GetFileRecord, { fileId });
+  const fileInfo = useQuery(api.storage.GetFileRecord, { fileId: fileId });
 
-  const GetFileInfo = () => {
-    const result = await GetFileInfo({ fileId: fileId });
-  };
+  // const GetFileInfo = async() => {
+  //   const result = await GetFileInfo({ fileId: fileId });
+  // };
 
   useEffect(() => {
     if (fileInfo) {
@@ -32,7 +32,11 @@ const Workspace: React.FC = () => {
       </div>
       <div>
         {/* Pdf viewer */}
-        {fileInfo?.fileUrl && <PdfViewer fileUrl={fileInfo.fileUrl} />}
+        {fileInfo?.fileUrl ? (
+          <PdfViewer fileUrl={fileInfo.fileUrl} />
+        ) : (
+          <p>No file URL available</p>
+        )}
       </div>
     </div>
   );

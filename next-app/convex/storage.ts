@@ -6,8 +6,6 @@ export const generateUploadUrl = mutation(async (ctx) => {
   return await ctx.storage.generateUploadUrl();
 });
 
-
-
 export const AddFileEntryToDb = mutation({
   args:
   {
@@ -46,8 +44,8 @@ export const GetFileRecord = query({
     fileId: v.string()
   },
   handler: async (ctx, args) => {
-    const result = await ctx.db.query("pdfFiles").filter((q) => q.eq(q.field('fileId'), args.fileId)).collect();
+    const result = await ctx.db.query("pdfFiles").filter((q) => q.eq(q.field('fileId'), args.fileId)).first();
     console.log(result);
-    return result[0];
+    return result;
   }
 })
