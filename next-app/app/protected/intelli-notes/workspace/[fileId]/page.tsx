@@ -12,7 +12,11 @@ const Workspace: React.FC = () => {
   const { fileId } = params;
 
   // Ensure useQuery is typed to return a FileInfo or undefined
-  const fileInfo = useQuery(api.storage.GetFileRecord, { fileId });
+  const GetFileRecord = useQuery(api.storage.GetFileRecord, { fileId });
+
+  const GetFileInfo = () => {
+    const result = await GetFileInfo({ fileId: fileId });
+  };
 
   useEffect(() => {
     if (fileInfo) {

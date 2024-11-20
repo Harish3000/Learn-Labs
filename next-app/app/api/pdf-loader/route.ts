@@ -31,7 +31,7 @@ export async function GET(req: { url: any; }) {
 
     const output = await splitter.createDocuments([pdfTextContext]);
 
-    let splitterList: string[] = [];
+    let splitterList: any[]= [];
     output.forEach(doc => {
         splitterList.push(doc.pageContent);
     })

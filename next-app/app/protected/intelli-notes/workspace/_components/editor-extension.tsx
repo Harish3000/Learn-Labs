@@ -15,13 +15,14 @@ import {
   Subscript,
   Superscript,
   Underline,
-Star,
+  Star,
   SquareCheckBigIcon,
   AtomIcon
 } from "lucide-react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
+// import { chatSession } from "@/configs/ai-model";
 
 interface EditorExtensionProps {
   editor: any;
@@ -30,29 +31,38 @@ interface EditorExtensionProps {
 const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
   const params = useParams() as { fileId: string };
   const { fileId } = params;
-    const SearchAI= useAction(api.myAction.search)
-    const OnAiClick =async () => {
-        const selectedText =editor.state.doc.textBetween(
-            editor.state.selection.from,
-            editor.state.selection.to,
-            ' '
-        )
-        console.log(selectedText);
+  const SearchAI = useAction(api.myAction.search);
+  const OnAiClick = async () => {
+    const selectedText = editor.state.doc.textBetween(
+      editor.state.selection.from,
+      editor.state.selection.to,
+      " "
+    );
+    console.log("selected text", selectedText);
 
-        const result = await SearchAI({
-            query: selectedText,
-            fileId:fileId
-        })
-        const UnformattedAns = JSON.parse(result)
-        let AllUnformattedAns = '';
-        UnformattedAns&&UnformattedAns.forEach((item: { pageContent: string; })=>{
-            AllUnformattedAns =AllUnformattedAns+item.pageContent
-        })
+    const result = await SearchAI({
+      query: selectedText,
+      fileId: fileId
+    });
 
-        const PROMPT="For question:"+selectedText+"and with the given  content as answer,"+"please give appropriate answer in HTML format. The answer content is:"+AllUnformattedAns;
+    console.log("unformatted answer", result);
+    // const UnformattedAns = JSON.parse(result);
+    // let AllUnformattedAns = "";
+    // UnformattedAns &&
+    //   UnformattedAns.forEach((item: { pageContent: string }) => {
+    //     AllUnformattedAns = AllUnformattedAns + item.pageContent;
+    //   });
 
-        
-    }
+    // const PROMPT =
+    //   "For question:" +
+    //   selectedText +
+    //   "and with the given  content as answer," +
+    //   "please give appropriate answer in HTML format. The answer content is:" +
+    //   AllUnformattedAns;
+
+    // const AiModelResult = await chatSession.sendMessage(PROMPT);
+    // console.log(AiModelResult.response.text());
+  };
   return (
     editor && (
       <div className="">
@@ -180,14 +190,13 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <AlignRight />
             </button>
-                      {/* AI content */}
-                      <button
+            {/* AI content */}
+            <button
               onClick={() => OnAiClick()}
-              className={'hover:text-blue-500'}
+              className={"hover:text-blue-500"}
             >
-              <AtomIcon/>
+              <AtomIcon />
             </button>
-                      
           </div>
         </div>
       </div>

@@ -77,9 +77,7 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children }) => {
     console.log("response", response);
 
     //API call to fetch PDF process Data
-    const ApiResp = await axios.get(
-      "/protected/api/pdf-loader?pdfUrl=" + fileUrl
-    );
+    const ApiResp = await axios.get("/api/pdf-loader?pdfUrl=" + fileUrl);
     console.log("ApiResp", ApiResp.data.result);
     await embeddDocument({
       splitText: ApiResp.data.result,
