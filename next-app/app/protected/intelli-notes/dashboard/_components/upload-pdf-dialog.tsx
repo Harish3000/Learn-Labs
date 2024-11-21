@@ -71,7 +71,7 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children }) => {
       storageId: storageId,
       fileName: fileName ?? "Untitled",
       fileUrl: fileUrl ?? "",
-      createdBy: "admin"
+      createdBy: "user._id"
     });
     console.log("response", response);
 
