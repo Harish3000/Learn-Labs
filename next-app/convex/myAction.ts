@@ -46,17 +46,6 @@ export const search = action({
       taskType: TaskType.RETRIEVAL_DOCUMENT,
       title: "Document title",
     }), { ctx });
-
-    // const resultOne = (await vectorStore.similaritySearch(args.query, 1)).filter(q=>q.metadata.fileId == args.fileId);
-    // console.log(resultOne);
-    // return JSON.stringify(resultOne);
-
-    // chat gpt
-//     const resultOne = await vectorStore.similaritySearch(args.query, 1);
-    // console.log("Unfiltered Results:", resultOne);
-
-
-    
  // Perform the similarity search
     const results = await vectorStore.similaritySearch(args.query, 1);
     

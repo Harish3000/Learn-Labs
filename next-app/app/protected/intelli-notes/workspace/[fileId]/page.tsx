@@ -14,10 +14,6 @@ const Workspace: React.FC = () => {
   // Ensure useQuery is typed to return a FileInfo or undefined
   const fileInfo = useQuery(api.storage.GetFileRecord, { fileId: fileId });
 
-  // const GetFileInfo = async() => {
-  //   const result = await GetFileInfo({ fileId: fileId });
-  // };
-
   useEffect(() => {
     if (fileInfo) {
       console.log(fileInfo);
@@ -28,14 +24,17 @@ const Workspace: React.FC = () => {
     <div className="grid grid-cols-2">
       <div>
         {/* Text editor */}
-        <TextEditor />
+        <TextEditor fileId={fileId} />
       </div>
       <div>
         {/* Pdf viewer */}
         {fileInfo?.fileUrl ? (
-          <PdfViewer fileUrl={fileInfo.fileUrl} />
+          <PdfViewer
+            fileUrl={fileInfo.fileUrl}
+            fileName={fileInfo.fileName || "Untitled"} // Fallback if fileName is undefined
+          />
         ) : (
-          <p>No file URL available</p>
+          <p>No file available</p>
         )}
       </div>
     </div>

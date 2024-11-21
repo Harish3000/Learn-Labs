@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use, useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -17,8 +17,20 @@ import ListKeymap from "@tiptap/extension-list-keymap";
 import Code from "@tiptap/extension-code";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
-const TextEditor: React.FC = () => {
+interface TextEditorProps {
+  fileId: string;
+}
+
+const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
+  const notes = useQuery(api.notes.GetNotes, {
+    fileId: fileId
+  });
+
+  console.log(notes);
+
   const editor = useEditor({
     extensions: [
       Document,
@@ -52,10 +64,14 @@ const TextEditor: React.FC = () => {
     }
   });
 
+  useEffect(() => {
+    editor && editor.commands.setContent(notes);
+  }, [notes && editor]);
+
   return (
     <div>
       <EditorExtension editor={editor} />
-      <div>
+      <div className="overflow-scroll h-[88]">
         <EditorContent editor={editor} />
       </div>
     </div>

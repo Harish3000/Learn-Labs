@@ -21,6 +21,7 @@ import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
 import { chatSession } from "@/configs/ai-model";
+import { toast } from "sonner";
 
 interface EditorExtensionProps {
   editor: any;
@@ -31,6 +32,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
   const { fileId } = params;
   const SearchAI = useAction(api.myAction.search);
   const OnAiClick = async () => {
+    toast("Intellinote is getting your answer...");
     const selectedText = editor.state.doc.textBetween(
       editor.state.selection.from,
       editor.state.selection.to,
@@ -60,7 +62,11 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
 
     const AiModelResult = await chatSession.sendMessage(PROMPT);
     console.log(AiModelResult.response.text());
-    const FinalAns = AiModelResult.response.text();
+    const FinalAns = AiModelResult.response
+      .text()
+      .replace("```", "")
+      .replace("html", "")
+      .replace("```", "");
 
     const AllText = editor.getHTML();
     editor.commands.setContent(

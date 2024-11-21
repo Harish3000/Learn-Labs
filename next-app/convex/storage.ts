@@ -13,8 +13,7 @@ export const AddFileEntryToDb = mutation({
         storageId: v.string(),
     fileName: v.string(),
         fileUrl:v.string(),
-        createdBy: v.string(),
-        createdAt: v.string()
+        createdBy: v.string()
   },
   handler: async (ctx, args) => {
     const result =await ctx.db.insert("pdfFiles", {
@@ -22,8 +21,7 @@ export const AddFileEntryToDb = mutation({
         storageId: args.storageId,
         fileName: args.fileName,
         fileUrl:args.fileUrl,
-        createdBy:args.createdBy,
-        createdAt:args.createdAt
+        createdBy:args.createdBy
     });
     return 'Inserted';
   },
@@ -46,6 +44,16 @@ export const GetFileRecord = query({
   handler: async (ctx, args) => {
     const result = await ctx.db.query("pdfFiles").filter((q) => q.eq(q.field('fileId'), args.fileId)).first();
     console.log(result);
+    return result;
+  }
+})
+
+export const GetUserFiles = query({
+  args: {
+    createdBy: v.string()
+  },
+  handler: async (ctx, args) => {
+    const result = await ctx.db.query("pdfFiles").filter((q) => q.eq(q.field('createdBy'), args.createdBy)).first();
     return result;
   }
 })
