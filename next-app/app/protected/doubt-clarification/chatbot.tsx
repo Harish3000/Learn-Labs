@@ -1,13 +1,49 @@
 "use client";
 import { FC, useState } from "react";
+import GetChat from "./api/getChat";
 
 const ChatBotComponent: FC = () => {
   const [message, setMessage] = useState("");
+  const [chat, setChat] = useState<{ user: string; bot: string }[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
-    if (message.trim()) {
-      console.log("Message sent:", message);
-      setMessage("");
+  const handleSend = async () => {
+    if (!message.trim()) return;
+
+    const userMessage = message;
+    setChat((prev) => [...prev, { user: userMessage, bot: "" }]);
+    setMessage("");
+    setLoading(true);
+
+    try {
+      // const response = await fetch("/api/getChat.tsx", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ question: userMessage }),
+      // });
+
+      // if (!response.ok) {
+      //   throw new Error("Failed to fetch response from server.");
+      // }
+
+      // const data = await response.json();
+
+      const data = await GetChat(userMessage);
+
+      setChat((prev) => {
+        const updatedChat = [...prev];
+        updatedChat[updatedChat.length - 1].bot = data; // Bots response
+        return updatedChat;
+      });
+    } catch (error) {
+      setChat((prev) => {
+        const updatedChat = [...prev];
+        updatedChat[updatedChat.length - 1].bot =
+          "Sorry, something went wrong. Please try again.";
+        return updatedChat;
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -17,7 +53,13 @@ const ChatBotComponent: FC = () => {
         Live Doubt Clarification
       </div>
       <div className="flex-1 p-4 overflow-y-auto space-y-2 text-white">
-        {/*doubt clarify will appear here */}
+        {chat.map((item, index) => (
+          <div key={index}>
+            <p className="text-blue-400 font-semibold">You: {item.user}</p>
+            <p className="text-gray-300">Bot: {item.bot || "..."}</p>
+          </div>
+        ))}
+        {loading && <p className="text-gray-300">Bot: Thinking...</p>}
       </div>
       <div className="flex p-4 border-t border-gray-700">
         <input
@@ -29,9 +71,14 @@ const ChatBotComponent: FC = () => {
         />
         <button
           onClick={handleSend}
-          className="ml-2 bg-black text-white p-2 rounded-lg hover:bg-blue-700 transition duration-200"
+          disabled={loading}
+          className={`ml-2 p-2 rounded-lg transition duration-200 ${
+            loading
+              ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+              : "bg-black text-white hover:bg-blue-700"
+          }`}
         >
-          Send
+          {loading ? "Sending..." : "Send"}
         </button>
       </div>
     </div>
