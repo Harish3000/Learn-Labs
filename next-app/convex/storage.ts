@@ -49,10 +49,14 @@ export const GetFileRecord = query({
 })
 
 export const GetUserFiles = query({
+  
   args: {
     createdBy: v.string()
   },
   handler: async (ctx, args) => {
+    if(args?.createdBy){
+      return;
+    }
     const result = await ctx.db.query("pdfFiles").filter((q) => q.eq(q.field('createdBy'), args.createdBy)).first();
     return result;
   }

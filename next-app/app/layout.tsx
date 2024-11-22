@@ -6,7 +6,7 @@ import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
 import Link from "next/link";
-import "./globals.css";
+import "/app/globals.css";
 import Provider from "./provider";
 import { Toaster } from "@/components/ui/sonner";
 

@@ -3,11 +3,11 @@ import {v} from 'convex/values';
 
 export default defineSchema({
     users: defineTable({
-        id: v.string(),
-        role: v.string(),
-      email: v.string()
-    }),
-
+    id: v.string(),
+    email: v.string(),
+    role: v.string(),
+  }),
+  
     pdfFiles: defineTable({
         fileId: v.string(),
         storageId: v.string(),

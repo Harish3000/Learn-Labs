@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import Sidebar from "./_components/sidebar";
 import Provider from "@/app/provider";
+import "/app/globals.css";
 
 interface DashboardLayoutProps {
   children: ReactNode;

@@ -8,7 +8,7 @@ export default async function ProtectedHomePage() {
   const supabase = await createClient();
 
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
@@ -34,7 +34,7 @@ export default async function ProtectedHomePage() {
             Collab Summary
           </button>
         </Link>
-        <Link href="/protected/intelli-notes">
+        <Link href="/protected/intelli-notes/dashboard">
           <button className="bg-blue-500 text-white px-4 py-2 rounded">
             Intelli Notes
           </button>
