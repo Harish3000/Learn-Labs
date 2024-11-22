@@ -8,7 +8,7 @@ import Image from "next/image";
 
 const Dashboard: React.FC = () => {
   const fileList = useQuery(api.storage.GetUserFiles, {
-    createdBy: "user._id"
+    createdBy: "admin"
   });
 
   console.log("file list", fileList);
