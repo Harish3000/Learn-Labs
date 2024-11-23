@@ -16,18 +16,6 @@ const ChatBotComponent: FC = () => {
     setLoading(true);
 
     try {
-      // const response = await fetch("/api/getChat.tsx", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ question: userMessage }),
-      // });
-
-      // if (!response.ok) {
-      //   throw new Error("Failed to fetch response from server.");
-      // }
-
-      // const data = await response.json();
-
       const data = await GetChat(userMessage);
 
       setChat((prev) => {
