@@ -22,23 +22,27 @@ const DoubtClarification = (props: { searchParams: any }) => {
 
   return (
     <div>
-      <h1>Doubt Clarification</h1>
-
+      <h1>Doubt Clarification Demo </h1>
+      <br />
       {/* Button to trigger transcript fetch */}
       <button
         onClick={handleFetchTranscript}
-        style={{
-          backgroundColor: "white",
-          color: "black",
-          border: "1px solid #ccc",
-        }}
+        className="px-4 py-2 bg-purple-500 text-black border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
       >
         Fetch Transcript
       </button>
       {/* Conditionally render GetTranscript */}
       {fetchTranscript && <GetTranscript req="a" res="b" />}
-
       <ChatBotComponent />
+      <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br />
+      <br /> <br /> <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
     </div>
   );
 };

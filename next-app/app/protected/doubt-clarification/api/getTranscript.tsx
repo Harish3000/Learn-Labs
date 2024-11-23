@@ -48,22 +48,12 @@ export default async function GetTranscript(req: any, res: any) {
   console.log("video_id:", video_id);
   console.log("lecture_id:", lecture_id);
 
-  // if (!video_id || !lecture_id) {
-  //   return res
-  //     .status(400)
-  //     .json({ error: "video_id and lecture_id are required" });
-  // }
-
   try {
     // Step 1: Call external API to fetch the transcript
     const fastApiResponse = await fetch(
       `http://127.0.0.1:8000/transcript/${video_id}`
     );
     const { transcript } = await fastApiResponse.json();
-
-    // if (!transcript) {
-    //   return res.status(404).json({ error: "Transcript not found" });
-    // }
 
     // Step 2: Split transcript into smaller chunks
     const chunks = splitTextIntoChunks(transcript);
@@ -107,11 +97,6 @@ export default async function GetTranscript(req: any, res: any) {
         return data;
       })
     );
-
-    // res.status(200).json({
-    //   message: "Transcript embedded and stored successfully",
-    //   embeddings,
-    // });
 
     return <></>;
   } catch (error) {

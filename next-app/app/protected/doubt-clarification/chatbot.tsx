@@ -48,7 +48,7 @@ const ChatBotComponent: FC = () => {
   };
 
   return (
-    <div className="fixed right-4 bottom-16 w-80 h-[90vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col">
+    <div className="fixed right-4 bottom-16 w-80 h-[85vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col">
       <div className="bg-gray-900 text-white text-lg font-semibold p-4 rounded-t-lg">
         Live Doubt Clarification
       </div>
