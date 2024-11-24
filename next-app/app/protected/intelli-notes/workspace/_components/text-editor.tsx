@@ -30,7 +30,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
     fileId: fileId
   });
 
-  console.log(notes);
+  console.log("Notes", notes);
 
   const editor = useEditor({
     extensions: [
@@ -66,8 +66,10 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
   });
 
   useEffect(() => {
-    editor && editor.commands.setContent(notes);
-  }, [notes && editor]);
+    if (editor && notes) {
+      editor.commands.setContent(notes);
+    }
+  }, [notes, editor]);
 
   return (
     <div>

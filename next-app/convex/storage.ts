@@ -43,7 +43,7 @@ export const GetFileRecord = query({
   },
   handler: async (ctx, args) => {
     const result = await ctx.db.query("pdfFiles").filter((q) => q.eq(q.field('fileId'), args.fileId)).first();
-    console.log(result);
+    console.log("Results",result);
     return result;
   }
 })
@@ -55,9 +55,9 @@ export const GetUserFiles = query({
   },
   handler: async (ctx, args) => {
     if(!args?.createdBy){
-      return;
+      return [];
     }
-    const result = await ctx.db.query("pdfFiles").filter((q) => q.eq(q.field('createdBy'), args.createdBy)).first();
-    return result;
+    const result = await ctx.db.query("pdfFiles").filter((q) => q.eq(q.field('createdBy'), args.createdBy)).collect();
+    return result[0];
   }
 })

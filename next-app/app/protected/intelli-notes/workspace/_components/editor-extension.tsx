@@ -30,7 +30,9 @@ interface EditorExtensionProps {
 const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
   const params = useParams() as { fileId: string };
   const { fileId } = params;
+
   const SearchAI = useAction(api.myAction.search);
+
   const OnAiClick = async () => {
     toast("Intellinote is getting your answer...");
     const selectedText = editor.state.doc.textBetween(
@@ -38,7 +40,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
       editor.state.selection.to,
       " "
     );
-    console.log("selected text", selectedText);
+    console.log("selected text:", selectedText);
 
     const result = await SearchAI({
       query: selectedText,
@@ -46,6 +48,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
     });
 
     console.log("unformatted answer", result);
+    
     const UnformattedAns = JSON.parse(result);
     let AllUnformattedAns = "";
     UnformattedAns &&

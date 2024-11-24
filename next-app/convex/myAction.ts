@@ -4,11 +4,6 @@ import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { TaskType } from "@google/generative-ai";
 import { v } from "convex/values";
 
-// interface IngestArgs {
-//    splitText: string[];
-//   fileId: string;
-// }
-
 export const ingest = action({
     args: {
         splitText: v.array(v.string()),
@@ -42,7 +37,10 @@ export const search = action({
       model: "text-embedding-004", // 768 dimensions
       taskType: TaskType.RETRIEVAL_DOCUMENT,
       title: "Document title",
-    }), { ctx });
+      }), { ctx });
+    
+    
+ /**
  // Perform the similarity search
     const results = await vectorStore.similaritySearch(args.query, 1);
     
@@ -56,12 +54,15 @@ export const search = action({
         fileId: doc.metadata.fileId
       }
     }));
-
+ 
     return JSON.stringify(formattedResponse);
+*/
 
 
+    const resultOne = await (await vectorStore.similaritySearch(args.query, 1)).filter(q => q.metadata.fileId === args.fileId);
+    console.log(resultOne);
 
-
+    return JSON.stringify(resultOne);
 
   },
 });

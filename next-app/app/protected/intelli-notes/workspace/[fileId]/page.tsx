@@ -16,7 +16,7 @@ const Workspace: React.FC = () => {
 
   useEffect(() => {
     if (fileInfo) {
-      console.log(fileInfo);
+      console.log("File Info", fileInfo);
     }
   }, [fileInfo]);
 
@@ -28,13 +28,12 @@ const Workspace: React.FC = () => {
       </div>
       <div>
         {/* Pdf viewer */}
-        {fileInfo?.fileUrl ? (
-          <PdfViewer
-            fileUrl={fileInfo.fileUrl}
-            fileName={fileInfo.fileName || "Untitled"} // Fallback if fileName is undefined
-          />
+        {fileInfo ? (
+          <PdfViewer fileUrl={fileInfo.fileUrl} fileName={fileInfo.fileName} />
         ) : (
-          <p>No file available</p>
+          <div className="h-full flex items-center justify-center">
+            No file available
+          </div>
         )}
       </div>
     </div>

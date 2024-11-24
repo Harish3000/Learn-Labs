@@ -7,7 +7,7 @@ interface PdfViewerProps {
 }
 
 const PdfViewer: React.FC<PdfViewerProps> = ({ fileUrl, fileName }) => {
-  console.log(fileUrl);
+  console.log("file Url", fileUrl);
   return (
     <>
       <div className="p-4 flex items-center justify-between shadow-md">
