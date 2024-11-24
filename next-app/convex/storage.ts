@@ -55,9 +55,9 @@ export const GetUserFiles = query({
   },
   handler: async (ctx, args) => {
     if(!args?.createdBy){
-      return [];
+      return;
     }
     const result = await ctx.db.query("pdfFiles").filter((q) => q.eq(q.field('createdBy'), args.createdBy)).collect();
-    return result[0];
+    return result;
   }
 })

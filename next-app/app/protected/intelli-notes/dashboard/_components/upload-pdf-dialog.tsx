@@ -35,10 +35,7 @@ interface UserRole {
   };
 }
 
-const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({
-  children,
-  isMaxFile
-}) => {
+const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children, isMaxFile }) => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [file, setFile] = React.useState<File | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -95,12 +92,12 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({
     console.log("ApiResp", ApiResp.data.result);
 
     if (ApiResp.data.result) {
-     const embed = await embeddDocument({
-       splitText: Array.isArray(ApiResp.data.result)
-         ? ApiResp.data.result
-         : [ApiResp.data.result],
-       fileId: fileId
-     });
+      const embed = await embeddDocument({
+        splitText: Array.isArray(ApiResp.data.result)
+          ? ApiResp.data.result
+          : [ApiResp.data.result],
+        fileId: fileId
+      });
       console.log("Embed", embed);
     }
 
@@ -113,11 +110,8 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({
   return (
     <Dialog open={open}>
       <DialogTrigger asChild>
-        <Button
-          onClick={() => setOpen(true)}
-          disabled={isMaxFile}
-          className="w-full gap-2"
-        >
+        <Button onClick={() => setOpen(true)} className="w-full gap-2"
+          disabled={isMaxFile}>
           <Upload className="h-4 w-4" /> Upload PDF
         </Button>
       </DialogTrigger>

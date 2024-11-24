@@ -13,42 +13,13 @@ import { Progress } from "@/components/ui/progress";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect } from "react";
-import axios from "axios";
-
-// interface UserRole {
-//   user_metadata: {
-//     role: string;
-//   };
-// }
+import { usePathname } from "next/navigation";
 
 export default function Sidebar() {
-  // const [userRole, setUserRole] = useState<UserRole | null>(null);
-  // const [isLoading, setIsLoading] = useState(true);
-
+  const path = usePathname();
   const fileList = useQuery(api.storage.GetUserFiles, {
     createdBy: "Admin"
   });
-
-  // Fetch user role on component mount
-  // useEffect(() => {
-  //   const fetchUserRole = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         '/api/intellinote/check-role?roles=["Admin"]'
-  //       );
-  //       setUserRole(response.data);
-  //     } catch (error) {
-  //       console.error("Failed to fetch user role:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchUserRole();
-  // }, []);
-
-  // const isAdmin = userRole?.user_metadata.role === "Admin";
-  // const isMaxFile = fileList?.length >= 5;
 
   return (
     <div className="fixed left-0 top-0 bottom-0 z-40 w-64 overflow-y-auto border-r bg-background p-4 shadow-lg">
@@ -67,49 +38,37 @@ export default function Sidebar() {
             </p>
           </div>
 
-          {/* Upload button is disabled if user is not admin or max files reached */}
-          {/* <UploadPdfDialog isMaxFile={isMaxFile || !isAdmin}>
-            <Button
-              className="w-full gap-2 m-5"
-              disabled={isLoading || !isAdmin || isMaxFile}
-              title={
-                !isAdmin
-                  ? "Only admins can upload files"
-                  : isMaxFile
-                    ? "Maximum files reached"
-                    : ""
-              }
-            >
-              <Upload className="h-4 w-4" /> Upload PDF
-              {isLoading && "Loading..."}
-            </Button>
-          </UploadPdfDialog> */}
-
-          <UploadPdfDialog isMaxFile={fileList?.length >= 5 ? true : false}>
+          <UploadPdfDialog
+            isMaxFile={(fileList?.length ?? 0) >= 5 ? true : false}
+          >
             <Button className="w-full gap-2 m-5">
               <Upload className="h-4 w-4" /> Upload PDF
             </Button>
           </UploadPdfDialog>
 
           <nav className="flex flex-col space-y-3">
-            <div className="flex gap-2 item-center p-3  hover:bg-slate-100 rounded-lg cursor-poniter">
-              <Layout />
-              <Link href="#workspace" className="text-sm font-medium">
+            <Link href="#workspace" className="text-sm font-medium">
+              <div
+                className={`flex gap-2 item-center p-3 hover:bg-slate-100 rounded-lg cursor-poniter ${path == "/dashboard" && "bg-slate-200"}`}
+              >
+                <Layout />
                 <h2> Workspace</h2>
-              </Link>
-            </div>
+              </div>
+            </Link>
 
-            <div className="flex gap-2 item-center p-3 hover:bg-slate-100 rounded-lg cursor-poniter">
-              <Shield />
-              <Link href="#upgrade" className="text-sm font-medium">
+            <Link href="#upgrade" className="text-sm font-medium">
+              <div
+                className={`flex gap-2 item-center p-3 hover:bg-slate-100 rounded-lg cursor-poniter ${path == "/dashboard/upgrade" && "bg-slate-200"}`}
+              >
+                <Shield />
                 Upgrade
-              </Link>
-            </div>
+              </div>
+            </Link>
           </nav>
         </div>
         <div className="absolute bottom-8 w[80%]">
-          <Progress value={(fileList?.length / 5) * 100} />
-          <p className="text-sm mt-1">5 files can be Uploaded</p>
+          <Progress value={((fileList?.length ?? 0) / 5) * 100} />
+          <p className="text-sm mt-1">{fileList?.length} Uploaded out of 5</p>
         </div>
       </div>
     </div>
