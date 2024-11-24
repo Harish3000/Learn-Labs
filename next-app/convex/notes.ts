@@ -1,15 +1,15 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-interface AddNotesArgs {
-  fileId: string;
-  notes: any;
-createdBy: any;
-}
+// interface AddNotesArgs {
+//   fileId: string;
+//   notes: any;
+// createdBy: any;
+// }
 
-interface GetNotesArgs{
-  fileId: string;
-}
+// interface GetNotesArgs{
+//   fileId: string;
+// }
 
 export const AddNotes = mutation({
   args: {
@@ -17,7 +17,7 @@ export const AddNotes = mutation({
     notes: v.any(),
     createdBy: v.any()
   },
-  handler: async (ctx, args: AddNotesArgs) => {
+  handler: async (ctx, args) => {
     const record = await ctx.db
       .query("notes")
       .filter((q) => q.eq(q.field("fileId"), args.fileId))
@@ -41,11 +41,11 @@ export const GetNotes = query({
   args: {
     fileId:v.string()
   },
-  handler: async(ctx, args:GetNotesArgs)=>{
+  handler: async(ctx, args)=>{
     const result = await ctx.db
       .query("notes")
       .filter((q) => q.eq(q.field("fileId"),args.fileId))
       .first();
-    return result?.notes;
+    return result?.notes?? '';
   }
 })

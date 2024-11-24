@@ -39,7 +39,10 @@ export const search = action({
       title: "Document title",
       }), { ctx });
     
-    
+    const resultOne = await (await vectorStore.similaritySearch(args.query, 1)).filter(q => q.metadata.fileId === args.fileId);
+    console.log(resultOne);
+
+    return JSON.stringify(resultOne);
  /**
  // Perform the similarity search
     const results = await vectorStore.similaritySearch(args.query, 1);
@@ -59,10 +62,6 @@ export const search = action({
 */
 
 
-    const resultOne = await (await vectorStore.similaritySearch(args.query, 1)).filter(q => q.metadata.fileId === args.fileId);
-    console.log(resultOne);
-
-    return JSON.stringify(resultOne);
 
   },
 });

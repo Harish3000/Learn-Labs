@@ -17,7 +17,7 @@ import {
   SquareCheckBigIcon,
   AtomIcon
 } from "lucide-react";
-import { useAction } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
 import { chatSession } from "@/configs/ai-model";
@@ -32,6 +32,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
   const { fileId } = params;
 
   const SearchAI = useAction(api.myAction.search);
+
+  const saveNotes = useMutation(api.notes.AddNotes);
 
   const OnAiClick = async () => {
     toast("Intellinote is getting your answer...");
@@ -48,7 +50,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
     });
 
     console.log("unformatted answer", result);
-    
+
     const UnformattedAns = JSON.parse(result);
     let AllUnformattedAns = "";
     UnformattedAns &&
@@ -75,6 +77,12 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
     editor.commands.setContent(
       AllText + "<p><strong> Answer :</strong>" + FinalAns + "</p>"
     );
+
+    saveNotes({
+      notes: editor.getHTML(),
+      fileId: fileId,
+      createdBy: "Admin"
+    });
   };
   return (
     editor && (
