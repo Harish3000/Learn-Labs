@@ -19,14 +19,14 @@ export default function Home() {
         <div className="mx-auto max-w-screen-xl px-4 py-32 flex-col gap-24 flex h-screen items-center">
           <div className="mx-auto max-w-4xl text-center">
             <h1 className="bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 bg-clip-text  font-extrabold text-transparent text-5xl">
-              {`Have a smooth meeting`}
+              {`Let the brainstorming begin!`}
             </h1>
             <h1 className="bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 bg-clip-text font-extrabold text-transparent text-5xl">
-              <span className="block">with team members</span>
+              <span className="block">Welcome to Your Team's Collaboration Hub!</span>
             </h1>
             <p className="mx-auto mt-6 max-w-xl sm:text-xl/relaxed">
-              Zegocloud is a global communication service provider which
-              provides them developer-friendly and powerful SDK & APIs
+            Remember, this space is all about connecting ideas and building on what’s already been shared. 
+            Let’s make it productive, engaging, and inspiring!
             </p>
             <div className="flex items-center justify-center gap-4 mt-6">
               <input
