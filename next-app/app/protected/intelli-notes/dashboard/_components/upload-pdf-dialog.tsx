@@ -35,11 +35,6 @@ interface UserRole {
   };
 }
 
-interface EmbedActionParams {
-  splitText: string[]; // Changed from any to string[]
-  fileId: string;
-}
-
 const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({
   children,
   isMaxFile
@@ -100,12 +95,13 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({
     console.log("ApiResp", ApiResp.data.result);
 
     if (ApiResp.data.result) {
-      const embedParams: EmbedActionParams = {
-        splitText: ApiResp.data.result,
-        fileId: fileId
-      };
-
-      console.log("Embed", embedParams);
+     const embed = await embeddDocument({
+       splitText: Array.isArray(ApiResp.data.result)
+         ? ApiResp.data.result
+         : [ApiResp.data.result],
+       fileId: fileId
+     });
+      console.log("Embed", embed);
     }
 
     setLoading(false);

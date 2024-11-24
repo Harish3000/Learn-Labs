@@ -4,17 +4,17 @@ import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { TaskType } from "@google/generative-ai";
 import { v } from "convex/values";
 
-interface IngestArgs {
-  splitText: any;
-  fileId: string;
-}
+// interface IngestArgs {
+//    splitText: string[];
+//   fileId: string;
+// }
 
 export const ingest = action({
     args: {
-        splitText: v.any(),
+        splitText: v.array(v.string()),
         fileId : v.string(),
   },
-  handler: async (ctx, args: IngestArgs) => {
+  handler: async (ctx, args) => {
     await ConvexVectorStore.fromTexts(
       args.splitText,
      { fileId: args.fileId }, 
