@@ -11,9 +11,9 @@ export const AddFileEntryToDb = mutation({
   {
         fileId: v.string(),
         storageId: v.string(),
-    fileName: v.string(),
+        fileName: v.string(),
         fileUrl:v.string(),
-        createdBy: v.string()
+        createdBy: v.any()
   },
   handler: async (ctx, args) => {
     const result =await ctx.db.insert("pdfFiles", {
@@ -51,10 +51,10 @@ export const GetFileRecord = query({
 export const GetUserFiles = query({
   
   args: {
-    createdBy: v.string()
+    createdBy: v.optional(v.any())
   },
   handler: async (ctx, args) => {
-    if(args?.createdBy){
+    if(!args?.createdBy){
       return;
     }
     const result = await ctx.db.query("pdfFiles").filter((q) => q.eq(q.field('createdBy'), args.createdBy)).first();

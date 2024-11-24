@@ -12,7 +12,7 @@ import chatImage from "/app/mini.png";
 export function Chatbot() {
   const { messages, input, handleInputChange, handleSubmit, isLoading, stop } =
     useChat({
-      api: "/api/chat"
+      api: "/api/intellinote/chat"
     });
 
   return (

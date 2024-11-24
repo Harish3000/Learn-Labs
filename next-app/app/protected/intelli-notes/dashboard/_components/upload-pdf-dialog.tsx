@@ -21,22 +21,40 @@ import { Loader2Icon } from "lucide-react";
 import { v4 as uuid4 } from "uuid";
 // import { useUser } from "@clerk/nextjs";
 import axios from "axios";
+import { toast } from "sonner";
+import { useState, useEffect } from "react";
 
 interface UploadPdfDialogProps {
   children: ReactNode;
+  isMaxFile: boolean;
 }
 
-const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children }) => {
+interface UserRole {
+  user_metadata: {
+    role: string;
+  };
+}
+
+interface EmbedActionParams {
+  splitText: string[]; // Changed from any to string[]
+  fileId: string;
+}
+
+const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({
+  children,
+  isMaxFile
+}) => {
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [file, setFile] = React.useState<File | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [fileName, setFileName] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
   const addFileEntry = useMutation(api.storage.AddFileEntryToDb);
   const getFileUrl = useMutation(api.storage.getFileUrl);
   // const user =useUser();
   const embeddDocument = useAction(api.myAction.ingest);
-
-  const [file, setFile] = React.useState<File | null>(null);
-  const [loading, setLoading] = React.useState(false);
-  const [fileName, setFileName] = React.useState("");
-  const [open, setOpen] = React.useState(false);
 
   const OnFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -62,7 +80,7 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children }) => {
       throw new Error(`Upload failed with status: ${result.status}`);
     }
     const { storageId } = await result.json();
-    console.log("storageId", storageId);
+    console.log("Storage Id", storageId);
 
     const fileId = uuid4();
     const fileUrl = await getFileUrl({ storageId: storageId });
@@ -71,28 +89,39 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children }) => {
       storageId: storageId,
       fileName: fileName ?? "Untitled",
       fileUrl: fileUrl ?? "",
-      createdBy: "admin"
+      createdBy: "Admin"
     });
-    console.log("response", response);
+    console.log("Response", response);
 
     //API call to fetch PDF process Data
     const ApiResp = await axios.get(
       "/api/intellinote/pdf-loader?pdfUrl=" + fileUrl
     );
     console.log("ApiResp", ApiResp.data.result);
-    await embeddDocument({
-      splitText: ApiResp.data.result,
-      fileId: fileId
-    });
-    // console.log(embeddResult);
+
+    if (ApiResp.data.result) {
+      const embedParams: EmbedActionParams = {
+        splitText: ApiResp.data.result,
+        fileId: fileId
+      };
+
+      console.log("Embed", embedParams);
+    }
+
     setLoading(false);
     setOpen(false);
+
+    toast("File is Ready to view");
   };
 
   return (
     <Dialog open={open}>
       <DialogTrigger asChild>
-        <Button onClick={() => setOpen(true)} className="w-full gap-2">
+        <Button
+          onClick={() => setOpen(true)}
+          disabled={isMaxFile}
+          className="w-full gap-2"
+        >
           <Upload className="h-4 w-4" /> Upload PDF
         </Button>
       </DialogTrigger>
@@ -121,7 +150,11 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children }) => {
         </DialogHeader>
         <DialogFooter className="sm:justify-end">
           <DialogClose asChild>
-            <Button type="button" variant="secondary">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setOpen(false)}
+            >
               Close
             </Button>
           </DialogClose>

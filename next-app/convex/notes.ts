@@ -4,7 +4,7 @@ import { v } from "convex/values";
 interface AddNotesArgs {
   fileId: string;
   notes: any;
-createdBy: string;
+createdBy: any;
 }
 
 interface GetNotesArgs{
@@ -15,7 +15,7 @@ export const AddNotes = mutation({
   args: {
     fileId: v.string(),
     notes: v.any(),
-    createdBy: v.string()
+    createdBy: v.any()
   },
   handler: async (ctx, args: AddNotesArgs) => {
     const record = await ctx.db
