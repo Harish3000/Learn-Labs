@@ -29,28 +29,12 @@ export async function POST(req: Request) {
 }
 
 
-// Read
-export async function GET() {
-    try {
-      // Create the Supabase client instance using the createClient function
-      const supabase = await createClient();
-  
-      // Query the 'current_session_users' table
-      const { data, error } = await supabase.from('current_session_users').select('*');
-  
-      if (error) {
-        // Return error response with status 400
-        return NextResponse.json({ error: error.message || 'Unknown error' }, { status: 400 });
-      }
-  
-      // Return the fetched data with status 200
-      return NextResponse.json(data, { status: 200 });
-    } catch (err) {
-      // Handle unexpected errors and return a 500 status
-      console.error('Error:', err);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
-}  
+// **READ** all items
+// export async function GET() {
+//     const { data, error } = await supabase.from('items').select('*');
+//     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+//     return NextResponse.json(data, { status: 200 });
+//   }
   
 //   // **UPDATE** an item
 //   export async function PUT(req: Request) {
