@@ -28,7 +28,6 @@ export async function POST(req: Request) {
   }
 }
 
-
 // **READ** all items
 // export async function GET() {
 //     const { data, error } = await supabase.from('items').select('*');
