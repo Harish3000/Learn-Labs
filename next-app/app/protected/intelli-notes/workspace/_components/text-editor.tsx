@@ -95,14 +95,6 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
       <div className="flex-2 flex justify-end" onClick={handleSave}>
         <Button size="sm">Save</Button>
       </div>
-      {/* <div className="mb-4">
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Save Notes
-        </button>
-      </div> */}
       <EditorExtension editor={editor} />
       <div className="overflow-scroll h-[88]">
         <EditorContent editor={editor} />
