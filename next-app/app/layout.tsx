@@ -17,11 +17,11 @@ const defaultUrl = process.env.VERCEL_URL
 export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Learn Labs",
-  description: "The fastest way to build knowledge"
+  description: "The fastest way to build knowledge",
 };
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
@@ -67,7 +67,7 @@ export default function RootLayout({
                 <ThemeSwitcher />
               </footer>
             </div>
-            <Toaster />
+            <Toaster position="top-center" richColors />
           </ThemeProvider>
         </Provider>
       </body>

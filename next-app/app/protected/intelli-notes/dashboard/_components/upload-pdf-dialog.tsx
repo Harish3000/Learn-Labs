@@ -104,7 +104,7 @@ const UploadPdfDialog: React.FC<UploadPdfDialogProps> = ({ children, isMaxFile }
     setLoading(false);
     setOpen(false);
 
-    toast("File is Ready to view");
+    toast.info("File is Ready to view");
   };
 
   return (

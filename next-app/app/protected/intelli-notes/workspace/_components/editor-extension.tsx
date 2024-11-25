@@ -15,7 +15,7 @@ import {
   Superscript,
   Underline,
   SquareCheckBigIcon,
-  AtomIcon
+  AtomIcon,
 } from "lucide-react";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -36,7 +36,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
   const saveNotes = useMutation(api.notes.AddNotes);
 
   const OnAiClick = async () => {
-    toast("Intellinote is getting your answer...");
+    toast.info("Intellinote is getting your answer...");
     const selectedText = editor.state.doc.textBetween(
       editor.state.selection.from,
       editor.state.selection.to,
@@ -46,7 +46,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
 
     const result = await SearchAI({
       query: selectedText,
-      fileId: fileId
+      fileId: fileId,
     });
 
     console.log("unformatted answer", result);
@@ -81,7 +81,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
     saveNotes({
       notes: editor.getHTML(),
       fileId: fileId,
-      createdBy: "Admin"
+      createdBy: "Admin",
     });
   };
   return (

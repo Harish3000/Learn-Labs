@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
+
 
 interface PdfViewerProps {
   fileUrl: string;
@@ -12,11 +12,7 @@ const PdfViewer: React.FC<PdfViewerProps> = ({ fileUrl, fileName }) => {
     <>
       <div className="p-4 flex items-center justify-between shadow-md">
         <div className="flex-1">
-          {/* This empty div helps push the heading to the center */}
-        </div>
-        <h2 className="text-lg font-bold flex-1 text-center">{fileName}</h2>
-        <div className="flex-1 flex justify-end">
-          <Button size="sm">Save</Button>
+          <h2 className="text-lg font-bold flex-1 text-center">{fileName}</h2>
         </div>
       </div>
       <div>

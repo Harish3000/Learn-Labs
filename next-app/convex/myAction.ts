@@ -43,25 +43,5 @@ export const search = action({
     console.log(resultOne);
 
     return JSON.stringify(resultOne);
- /**
- // Perform the similarity search
-    const results = await vectorStore.similaritySearch(args.query, 1);
-    
-    // Filter results to only include documents with matching fileId
-    const filteredResults = results.filter(doc => doc.metadata.fileId === args.fileId);
-    
-    // Format the response to match the desired structure
-    const formattedResponse = filteredResults.map(doc => ({
-      pageContent: doc.pageContent,
-      metadata: {
-        fileId: doc.metadata.fileId
-      }
-    }));
- 
-    return JSON.stringify(formattedResponse);
-*/
-
-
-
   },
 });
