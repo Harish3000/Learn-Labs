@@ -3,6 +3,7 @@ import { action } from "./_generated/server.js";
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { TaskType } from "@google/generative-ai";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 export const ingest = action({
     args: {
@@ -45,3 +46,4 @@ export const search = action({
     return JSON.stringify(resultOne);
   },
 });
+

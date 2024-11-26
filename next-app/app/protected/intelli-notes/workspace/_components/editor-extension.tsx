@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import {
   AlignCenter,
@@ -16,6 +16,8 @@ import {
   Underline,
   SquareCheckBigIcon,
   AtomIcon,
+  NotebookPen,
+  Search
 } from "lucide-react";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -46,7 +48,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
 
     const result = await SearchAI({
       query: selectedText,
-      fileId: fileId,
+      fileId: fileId
     });
 
     console.log("unformatted answer", result);
@@ -81,9 +83,13 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
     saveNotes({
       notes: editor.getHTML(),
       fileId: fileId,
-      createdBy: "Admin",
+      createdBy: "Admin"
     });
+
+    toast.success("Intellinote has successfully added your answer");
   };
+
+
   return (
     editor && (
       <div className="">
@@ -217,6 +223,20 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
               className={"hover:text-blue-500"}
             >
               <AtomIcon />
+            </button>
+            {/* Summarize content */}
+            <button
+              // onClick={}
+              className={"hover:text-blue-500"}
+            >
+              <NotebookPen />
+            </button>
+
+            <button
+              // onClick={}
+              className={"hover:text-blue-500"}
+            >
+              <Search />
             </button>
           </div>
         </div>

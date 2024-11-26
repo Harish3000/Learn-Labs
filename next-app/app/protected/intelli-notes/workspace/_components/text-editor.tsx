@@ -22,6 +22,8 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 interface TextEditorProps {
   fileId: string;
@@ -34,7 +36,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
 
   console.log("Notes", notes);
   const saveNotes = useMutation(api.notes.AddNotes);
-  
+
   const editor = useEditor({
     extensions: [
       Document,
@@ -74,26 +76,60 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
     }
   }, [notes, editor]);
 
-   const handleSave = () => {
-     if (editor) {
-       saveNotes({
-         fileId,
-         notes: editor.getHTML(),
-         createdBy: "Admin", // Replace with dynamic user info if needed
-       })
-         .then(() => {
-           toast.success("Notes saved successfully!");
-         })
-         .catch((err) => {
-           toast.error("Error saving notes:", err);
-         });
-     }
+  const handleSave = () => {
+    if (editor) {
+      saveNotes({
+        fileId,
+        notes: editor.getHTML(),
+        createdBy: "Admin" // Replace with dynamic user info if needed
+      })
+        .then(() => {
+          toast.success("Notes saved successfully!");
+        })
+        .catch((err) => {
+          toast.error("Error saving notes:", err);
+        });
+    }
   };
-  
+
+  const handleExportToPDF = async () => {
+    if (!editor) {
+      toast.error("Editor is not initialized.");
+      return;
+    }
+
+    const content = editor.getHTML(); // Get the editor content as HTML
+    const doc = new jsPDF();
+
+    // Convert HTML content to an image
+    const editorContainer = document.createElement("div");
+    editorContainer.innerHTML = content;
+    document.body.appendChild(editorContainer); // Temporarily append for rendering
+    const canvas = await html2canvas(editorContainer, { scale: 2 });
+    document.body.removeChild(editorContainer); // Remove the temporary element
+
+    const imgData = canvas.toDataURL("image/png");
+    const imgProps = doc.getImageProperties(imgData);
+    const pdfWidth = doc.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    // Add the image to the PDF
+    doc.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+    // Trigger download
+    doc.save("notes.pdf");
+    toast.success("PDF downloaded successfully!");
+  };
+
   return (
     <div>
-      <div className="flex-2 flex justify-end" onClick={handleSave}>
-        <Button size="sm">Save</Button>
+      <div className="flex-2 flex justify-end gap-5">
+        <Button size="sm" onClick={handleSave}>
+          Save
+        </Button>
+        <Button onClick={handleExportToPDF} size="sm">
+          Export
+        </Button>
       </div>
       <EditorExtension editor={editor} />
       <div className="overflow-scroll h-[88]">
