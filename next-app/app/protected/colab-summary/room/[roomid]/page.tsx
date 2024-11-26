@@ -19,7 +19,7 @@ const Room = ({ params }: { params: { roomid: string } }) => {
   // Function to store the URL in the database
   const storeUrlInDatabase = async (url: string, name: string) => {
     try {
-      const response = await fetch('/api/colab-summary', {
+      const response = await fetch('/api/colab-summary/session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ const Room = ({ params }: { params: { roomid: string } }) => {
       setMeetingEnded(true); // Set meeting ended state
       Swal.fire({
         title: "Meeting Ended",
-        text: "The meeting has ended after 10 minutes.",
+        text: "The meeting has ended. Thank you for joining!",
         icon: "info",
         confirmButtonText: "OK",
       }).then(() => {
