@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { NextRequest } from 'next/server';
 
-interface Request {
-    url: string;
-}
+// interface Request {
+//     url: string;
+// }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
     const reqUrl = req.url;
     const { searchParams } = new URL(reqUrl);
     const pdfUrl = searchParams.get('pdfUrl');

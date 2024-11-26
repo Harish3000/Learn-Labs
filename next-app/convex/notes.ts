@@ -1,16 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-// interface AddNotesArgs {
-//   fileId: string;
-//   notes: any;
-// createdBy: any;
-// }
-
-// interface GetNotesArgs{
-//   fileId: string;
-// }
-
 export const AddNotes = mutation({
   args: {
     fileId: v.string(),
