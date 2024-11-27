@@ -338,7 +338,8 @@ export default function Home() {
       },
     ];
 
-    const formattedPrompt = `Do a fact-checking and give me a summarization for the given text (include the fact-ckecking in first point, in the next point provide the summary. in the next point give me the accuracy of the provided text as a percentage) seperated as : factChecking, summaryText, accuracyText : ${prompt}`;
+    const formattedPrompt = `Do a fact-checking and give me a summarization for the given text (include the fact-ckecking in first point, in the next point provide the summary. 
+    in the next point give me the accuracy of the provided text as a percentage) seperated as : P1,P2,P3 : Make sure not to include P1,P2,P3 in anywhere else ${prompt}`;
 
     const chat = model.startChat({
       generationConfig,
@@ -358,10 +359,10 @@ export default function Home() {
     setResponseData(responseText);
 
     // Extracting fact-checking, summary, and accuracy from the response
-    const [factChecking, summaryText, accuracyText] = responseText.split("\n");
+    const [P1, P2, P3] = responseText.split("\n");
 
     // Parsing accuracy from the response (assumes it's in a percentage format like "Accuracy: 85%")
-    const accuracyMatch = accuracyText.match(/Accuracy: (\d+)%/);
+    const accuracyMatch = P3.match(/Accuracy: (\d+)%/);
     const accuracy = accuracyMatch ? parseInt(accuracyMatch[1], 10) : 0;
 
     // Retrieve user details from local storage
@@ -375,7 +376,7 @@ export default function Home() {
     const { _id, email, firstname } = parsedUser.user;
 
     // Store the fact-checking, summary, and accuracy in the database
-    await storeSummaryInDatabase(_id, email, firstname, factChecking, summaryText, accuracy);
+    await storeSummaryInDatabase(_id, email, firstname, P1, P2, accuracy);
   };
 
   // Function to handle form submission
