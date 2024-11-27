@@ -18,6 +18,7 @@ const PdfViewer: React.FC<PdfViewerProps> = ({ fileUrl, fileName }) => {
       <div>
         <iframe
           src={fileUrl + "#toolbar=0"}
+          // src={fileUrl}
           width="100%"
           className="overflow-scroll h-[90vh]"
         />

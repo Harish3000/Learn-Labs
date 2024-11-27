@@ -24,6 +24,7 @@ import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
 import { chatSession } from "@/configs/ai-model";
 import { toast } from "sonner";
+import { Tooltip } from "@nextui-org/tooltip";
 
 interface EditorExtensionProps {
   editor: any;
@@ -32,10 +33,8 @@ interface EditorExtensionProps {
 const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
   const params = useParams() as { fileId: string };
   const { fileId } = params;
-
-  const SearchAI = useAction(api.myAction.search);
-
-  const saveNotes = useMutation(api.notes.AddNotes);
+const SearchAI = useAction(api.myAction.search);
+const saveNotes = useMutation(api.notes.AddNotes);
 
   const OnAiClick = async () => {
     toast.info("Intellinote is getting your answer...");
@@ -90,54 +89,121 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
   };
 
 
+
+  const OnSummarizeClick = async () => {
+    toast.info("Summarizing your PDF content...");
+
+    try {
+      // Fetch relevant data for summarization
+      const result = await SearchAI({
+        query: "Summarize the document",
+        fileId: fileId
+      });
+
+      console.log("PDF content for summarization:", result);
+
+      // Combine all page content into a single string
+      const UnformattedContent = JSON.parse(result);
+      let fullContent = "";
+      UnformattedContent.forEach((item: { pageContent: string }) => {
+        fullContent += item.pageContent;
+      });
+
+      // Prompt the AI model to summarize
+      const PROMPT =
+        "Please summarize the following document content in concise and clear terms: " +
+        fullContent;
+
+      const AiModelResult = await chatSession.sendMessage(PROMPT);
+      console.log("AI summarization result:", AiModelResult.response.text());
+
+      const Summary = AiModelResult.response
+        .text()
+        .replace("```", "")
+        .replace("text", "")
+        .replace("```", "");
+
+      // Insert summary into the editor
+      const AllText = editor.getHTML();
+      editor.commands.setContent(
+        AllText + "<p><strong> Summary :</strong>" + Summary + "</p>"
+      );
+
+      // Save summarized notes
+      await saveNotes({
+        notes: editor.getHTML(),
+        fileId: fileId,
+        createdBy: "Admin"
+      });
+
+      toast.success("Summarization complete and added to your notes!");
+    } catch (error) {
+      console.error("Error during summarization:", error);
+      toast.error("Failed to summarize the PDF content. Please try again.");
+    }
+  };
+
+  
   return (
     editor && (
       <div className="">
         <div className="control-group">
           <div className="button-group flex gap-3">
             {/* heading styles */}
-            <button
-              onClick={() =>
-                editor.chain().focus().toggleHeading({ level: 1 }).run()
-              }
-              className={editor.isActive({ level: 1 }) ? "text-blue-500" : ""}
-            >
-              <Heading1 />
-            </button>
-            <button
-              onClick={() =>
-                editor.chain().focus().toggleHeading({ level: 2 }).run()
-              }
-              className={editor.isActive({ level: 2 }) ? "text-blue-500" : ""}
-            >
-              <Heading2 />
-            </button>
-            {/* bold button */}
-            <button
-              onClick={() =>
-                editor && editor.chain().focus().toggleBold().run()
-              }
-              className={
-                editor && editor.isActive("bold") ? "text-blue-500" : ""
-              }
-            >
-              <Bold />
-            </button>
-            {/* italic button */}
-            <button
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={editor.isActive("italic") ? "text-blue-500" : ""}
-            >
-              <Italic />
-            </button>
+            <Tooltip content="Heading 1">
+              <button
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 1 }).run()
+                }
+                className={editor.isActive({ level: 1 }) ? "text-blue-500" : ""}
+              >
+                <Heading1 />
+              </button>
+            </Tooltip>
+            <Tooltip content="Heading 2">
+              <button
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 2 }).run()
+                }
+                className={editor.isActive({ level: 2 }) ? "text-blue-500" : ""}
+              >
+                <Heading2 />
+              </button>
+            </Tooltip>
 
-            {/* underLine button */}
-            <button
-              onClick={() => editor.chain().focus().toggleUnderline().run()}
-              className={editor.isActive("underline") ? "text-blue-500" : ""}
-            >
-              <Underline />
-            </button>
+            <Tooltip content="Bold">
+              {/* bold button */}
+              <button
+                onClick={() =>
+                  editor && editor.chain().focus().toggleBold().run()
+                }
+                className={
+                  editor && editor.isActive("bold") ? "text-blue-500" : ""
+                }
+              >
+                <Bold />
+              </button>
+            </Tooltip>
+            <Tooltip content="Italic">
+              {/* italic button */}
+              <button
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={editor.isActive("italic") ? "text-blue-500" : ""}
+              >
+                <Italic />
+              </button>
+            </Tooltip>
+
+            <Tooltip content="Underline">
+              {/* underLine button */}
+              <button
+                onClick={() => editor.chain().focus().toggleUnderline().run()}
+                className={editor.isActive("underline") ? "text-blue-500" : ""}
+              >
+                <Underline />
+              </button>
+            </Tooltip>
+            <Tooltip content="Code">
             {/* code blocks */}
             <button
               onClick={() => editor.chain().focus().toggleCode().run()}
@@ -145,6 +211,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <Code />
             </button>
+            </Tooltip>
+             <Tooltip content="Task List">
             {/* tasks */}
             <button
               onClick={() => editor.chain().focus().toggleTaskList().run()}
@@ -152,6 +220,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <SquareCheckBigIcon />
             </button>
+              </Tooltip>
+              <Tooltip content="Strike through">
             {/* Strike through button */}
             <button
               onClick={() => editor.chain().focus().toggleStrike().run()}
@@ -159,6 +229,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <Strikethrough />
             </button>
+             </Tooltip>
+              <Tooltip content="Subscript">
             {/* Subscript button  */}
             <button
               onClick={() => editor.chain().focus().toggleSubscript().run()}
@@ -166,6 +238,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <Subscript />
             </button>
+             </Tooltip>
+              <Tooltip content="Superscript">
             {/* Super Script button */}
             <button
               onClick={() => editor.chain().focus().toggleSuperscript().run()}
@@ -173,6 +247,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <Superscript />
             </button>
+             </Tooltip>
+              <Tooltip content="Hightlight">
             {/* hightlight */}
             <button
               onClick={() =>
@@ -190,6 +266,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <Highlighter />
             </button>
+             </Tooltip>
+              <Tooltip content="Left align">
             {/* indentation */}
             <button
               onClick={() => editor.chain().focus().setTextAlign("left").run()}
@@ -199,6 +277,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <AlignLeft />
             </button>
+             </Tooltip>
+              <Tooltip content="Center">
             <button
               onClick={() =>
                 editor.chain().focus().setTextAlign("center").run()
@@ -209,6 +289,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <AlignCenter />
             </button>
+             </Tooltip>
+              <Tooltip content="Right align">
             <button
               onClick={() => editor.chain().focus().setTextAlign("right").run()}
               className={
@@ -217,6 +299,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <AlignRight />
             </button>
+             </Tooltip>
+              <Tooltip content="Ask AI">
             {/* AI content */}
             <button
               onClick={() => OnAiClick()}
@@ -224,20 +308,22 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
             >
               <AtomIcon />
             </button>
+             </Tooltip>
+              <Tooltip content="Summarize">
             {/* Summarize content */}
             <button
-              // onClick={}
+              onClick={() => OnSummarizeClick()}
               className={"hover:text-blue-500"}
             >
               <NotebookPen />
             </button>
-
-            <button
+ </Tooltip>
+            {/* <button
               // onClick={}
               className={"hover:text-blue-500"}
             >
               <Search />
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

@@ -123,7 +123,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
 
   return (
     <div>
-      <div className="flex-2 flex justify-end gap-5">
+      <div className="flex-2 flex justify-end gap-2">
         <Button size="sm" onClick={handleSave}>
           Save
         </Button>
