@@ -178,22 +178,20 @@ export default function Home() {
       },
     ];
 
+    const formattedPrompt = `Do a fact-checking and give me a summarization for the given text : ${prompt}`;
+
     const chat = model.startChat({
       generationConfig,
       safetySettings,
       history: [
         {
           role: "user",
-          parts: [{ text: "HELLO" }],
-        },
-        {
-          role: "model",
-          parts: [{ text: "Hello there! How can I assist you today?" }],
-        },
+          parts: [{ text: "ormattedPrompt" }],
+        }
       ],
     });
 
-    const result = await chat.sendMessage(prompt);
+    const result = await chat.sendMessage(formattedPrompt);
     const response = result.response;
     setResponseData(response.text());
   };
@@ -252,7 +250,7 @@ export default function Home() {
 
       {responseData && (
         <div>
-          <h1 className="mt-32">Gemini Output</h1>
+          <h1 className="mt-32">Analysis</h1>
           <div dangerouslySetInnerHTML={{ __html: responseData }} />
         </div>
       )}
