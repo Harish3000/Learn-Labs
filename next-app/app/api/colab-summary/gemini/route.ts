@@ -27,26 +27,63 @@ export async function GET() {
 }
 
 // POST handler to store analysis
+// export async function POST(req: Request) {
+//   try {
+//     const body = await req.json(); // Parse the incoming JSON
+//     const { analysis } = body; // Extract the analysis from the request body
+
+//     if (!analysis) {
+//       return NextResponse.json({ error: "Analysis text is required." }, { status: 400 });
+//     }
+
+//     // Insert the analysis into the Supabase table
+//     const { data, error } = await supabase
+//       .from("summaries") // Replace with your actual table name
+//       .insert([{ analysis_text: analysis }]); // Store the analysis in the table
+
+//     if (error) {
+//       console.error("Error inserting analysis:", error);
+//       return NextResponse.json({ error: "Failed to store analysis." }, { status: 500 });
+//     }
+
+//     return NextResponse.json({ message: "Analysis stored successfully." });
+//   } catch (error) {
+//     console.error("API Error:", error);
+//     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+//   }
+// }
+
 export async function POST(req: Request) {
   try {
     const body = await req.json(); // Parse the incoming JSON
-    const { analysis } = body; // Extract the analysis from the request body
+    const { userId, email, firstname, fact_checking, gemini_summary, accuracy } = body;
 
-    if (!analysis) {
-      return NextResponse.json({ error: "Analysis text is required." }, { status: 400 });
+    // Validation checks for required fields
+    if (!userId || !email || !firstname || !fact_checking || !gemini_summary || accuracy === undefined) {
+      return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
 
-    // Insert the analysis into the Supabase table
+    // Insert the data into the Supabase table
     const { data, error } = await supabase
       .from("summaries") // Replace with your actual table name
-      .insert([{ analysis_text: analysis }]); // Store the analysis in the table
+      .insert([{
+        user_id: userId,
+        email,
+        firstname,
+        fact_checking,
+        gemini_summary,
+        accuracy,
+      }]);
 
+    // Error handling for failed insertion
     if (error) {
-      console.error("Error inserting analysis:", error);
-      return NextResponse.json({ error: "Failed to store analysis." }, { status: 500 });
+      console.error("Error inserting data:", error);
+      return NextResponse.json({ error: "Failed to store summary." }, { status: 500 });
     }
 
-    return NextResponse.json({ message: "Analysis stored successfully." });
+    // Return a success response
+    return NextResponse.json({ message: "Summary stored successfully." });
+
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
