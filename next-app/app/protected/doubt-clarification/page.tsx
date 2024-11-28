@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FaFileAlt, FaMicrophone, FaRegCommentDots } from "react-icons/fa"; // Icons from react-icons
 import GetTranscript from "./api/getTranscript";
 import ChatBotComponent from "./chatbot";
 
@@ -21,28 +22,58 @@ const DoubtClarification = (props: { searchParams: any }) => {
   };
 
   return (
-    <div>
-      <h1>Doubt Clarification Demo </h1>
-      <br />
-      {/* Button to trigger transcript fetch */}
-      <button
-        onClick={handleFetchTranscript}
-        className="px-4 py-2 bg-purple-500 text-black border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
-      >
-        Fetch Transcript
-      </button>
-      {/* Conditionally render GetTranscript */}
-      {fetchTranscript && <GetTranscript req="a" res="b" />}
-      <ChatBotComponent />
-      <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br />
-      <br /> <br /> <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
+    <div className="p-6 bg-gray-50 min-h-screen">
+      {/* Page Header */}
+      <header className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-blue-600">
+          Doubt Clarification Demo
+        </h1>
+        <p className="text-gray-500 mt-2">
+          Fetch lecture transcripts and interact with the chatbot for
+          personalized learning.
+        </p>
+      </header>
+
+      {/* Main Content */}
+      <div className="max-w-3xl mx-auto">
+        {/* Button Section */}
+        <div className="flex justify-center mb-6">
+          <button
+            onClick={handleFetchTranscript}
+            className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            <FaFileAlt className="mr-2 text-lg" />
+            Fetch Transcript
+          </button>
+        </div>
+
+        {/* Conditionally render GetTranscript */}
+        {fetchTranscript && (
+          <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <GetTranscript req="a" res="b" />
+            <p className="text-green-600 mt-2 text-center">
+              Transcript fetched successfully! Interact with the chatbot below.
+            </p>
+          </div>
+        )}
+
+        {/* ChatBot Section */}
+        <div className="mt-8 bg-white p-6 rounded-lg shadow-md border border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-700 flex items-center mb-4">
+            <FaRegCommentDots className="mr-2 text-blue-500" />
+            Chat with the Bot
+          </h2>
+          <ChatBotComponent />
+        </div>
+      </div>
+
+      {/* Footer with Icons */}
+      <footer className="mt-12 text-center text-gray-500">
+        <p className="flex justify-center items-center">
+          <FaMicrophone className="mr-2 text-lg text-blue-600" />
+          Interactive Learning Platform &copy; {new Date().getFullYear()}
+        </p>
+      </footer>
     </div>
   );
 };
