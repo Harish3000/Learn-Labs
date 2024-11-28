@@ -19,7 +19,7 @@ const embeddings = new GoogleGenerativeAIEmbeddings({
 // Function to split transcript into chunks based on token limit
 const splitTextIntoChunks = (
   text: string,
-  chunkSize: number = 50
+  chunkSize: number = 100
 ): string[] => {
   const chunks = [];
   for (let i = 0; i < text.length; i += chunkSize) {
@@ -42,9 +42,11 @@ const generateEmbedding = async (text: string) => {
 // Main API route handler
 export default async function GetTranscript(req: any, res: any) {
   // Extract lecture and video metadata from the request, e.g., video_id and lecture_id
-  const video_id = "j1eO9UOi-sc";
-  const lecture_id = "1";
+  // const video_id = "j1eO9UOi-sc";
+  // const lecture_id = "1";
 
+  const video_id = "wTLJooaVVCw";
+  const lecture_id = "2";
   console.log("video_id:", video_id);
   console.log("lecture_id:", lecture_id);
 
@@ -65,7 +67,7 @@ export default async function GetTranscript(req: any, res: any) {
       chunks.map(async (chunk, index) => {
         // Generate embedding for the transcript chunk
 
-        // console.log("chunk:", chusnk);
+        // console.log("chunk:", chunk);
 
         const embedding = await generateEmbedding(chunk);
 

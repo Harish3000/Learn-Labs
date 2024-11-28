@@ -24,7 +24,7 @@ const vectorSearch = async (query: string) => {
 
   console.log("queryEmbedding:", queryEmbedding);
 
-  // Perform Supabase RPC call for vector search
+  // Perform Supabase  RPC call for vector search
   const { data, error } = await supabase.rpc("match_chunks", {
     query_embedding: queryEmbedding,
     similarity_threshold: 0.4,
@@ -50,7 +50,16 @@ const generateResponse = async (context: string, question: string) => {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   // Create the prompt for the model
-  const prompt = `You are a helpful assistant.\n\nContext:\n${context}\n\nQuestion:\n${question}`;
+
+  //   const prompt = `
+  //   You are a helpful assistant. If context is provided, include relevant timestamps and details in your response to refer to specific parts. If there is no context given, provide a short, general answer that is relevant to the question.
+  //   Context: ${context} Question: ${question}Note: If there is no context provided, please respond in a clear, concise manner without additional details or references.`;
+  //   const prompt = `You are a helpful assistant.\n\nContext:\n${context}\n\nQuestion:\n${question}`;
+  const prompt = `
+  You are a helpful assistant. If context is provided, refer to relevant timestamps and details in your response. If no context is provided, respond with a concise, general answer to the question.
+  Context: ${context} Question: ${question} 
+  Note: Ensure your responses are clear, direct, and avoid repetitive phrases such as "The provided text" or "Based on the provided."
+  `;
 
   try {
     // Generate content using the model with the prompt
