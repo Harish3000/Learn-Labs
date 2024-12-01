@@ -6,7 +6,8 @@ interface PdfViewerProps {
 }
 
 const PdfViewer: React.FC<PdfViewerProps> = ({ fileUrl, fileName }) => {
-  console.log("file Url", fileUrl);
+  console.log("PDF Viewer initialized with fileUrl:", fileUrl);
+  console.log("PDF Viewer initialized with fileName:", fileName);
 
   return (
     <>

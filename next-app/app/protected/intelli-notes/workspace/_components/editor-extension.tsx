@@ -25,6 +25,7 @@ import { useParams } from "next/navigation";
 import { chatSession } from "@/configs/ai-model";
 import { toast } from "sonner";
 import { Tooltip } from "@nextui-org/tooltip";
+import { generates } from "./../../../../../configs/generates";
 
 interface EditorExtensionProps {
   editor: any;
@@ -33,8 +34,8 @@ interface EditorExtensionProps {
 const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
   const params = useParams() as { fileId: string };
   const { fileId } = params;
-const SearchAI = useAction(api.myAction.search);
-const saveNotes = useMutation(api.notes.AddNotes);
+  const SearchAI = useAction(api.myAction.search);
+  const saveNotes = useMutation(api.notes.AddNotes);
 
   const OnAiClick = async () => {
     toast.info("Intellinote is getting your answer...");
@@ -59,62 +60,115 @@ const saveNotes = useMutation(api.notes.AddNotes);
         AllUnformattedAns = AllUnformattedAns + item.pageContent;
       });
 
-    const PROMPT =
-      "For question:" +
-      selectedText +
-      "and with the given  content as answer," +
-      "please give appropriate answer in HTML format. The answer content is:" +
-      AllUnformattedAns;
+    const GENERATED_TEXT = generates.generateAnswer(
+      selectedText,
+      AllUnformattedAns
+    );
 
-    const AiModelResult = await chatSession.sendMessage(PROMPT);
+     console.log("Generated text for AI:", GENERATED_TEXT);
+
+    const AiModelResult = await chatSession.sendMessage(GENERATED_TEXT);
     console.log(AiModelResult.response.text());
     const FinalAns = AiModelResult.response
       .text()
       .replace("```", "")
       .replace("html", "")
       .replace("```", "");
+    
+    console.log("Final processed answer:", FinalAns);
 
     const AllText = editor.getHTML();
     editor.commands.setContent(
       AllText + "<p><strong> Answer :</strong>" + FinalAns + "</p>"
     );
 
+    console.log("Saving notes with saveNotes mutation.");
     saveNotes({
       notes: editor.getHTML(),
       fileId: fileId,
       createdBy: "Admin"
     });
-
+    console.log("Notes saved successfully.");
     toast.success("Intellinote has successfully added your answer");
   };
 
+  // 1st docunent
+  // const OnSummarizeClick = async () => {
+  //   toast.info("Summarizing your PDF content...");
 
+  //   try {
+  //     // Fetch relevant data for summarization
+  //     const result = await SearchAI({
+  //       query: "Summarize the document",
+  //       fileId: fileId
+  //     });
 
+  //     console.log("PDF content for summarization:", result);
+
+  //     // Combine all page content into a single string
+  //     const UnformattedContent = JSON.parse(result);
+  //     let fullContent = "";
+  //     UnformattedContent.forEach((item: { pageContent: string }) => {
+  //       fullContent += item.pageContent;
+  //     });
+
+  //     // Prompt the AI model to summarize
+  //     const GENERATED_TEXT =
+  //       "Please summarize the following document content in concise and clear terms: " +
+  //       fullContent;
+
+  //     const AiModelResult = await chatSession.sendMessage(GENERATED_TEXT);
+  //     console.log("AI summarization result:", AiModelResult.response.text());
+
+  //     const Summary = AiModelResult.response
+  //       .text()
+  //       .replace("```", "")
+  //       .replace("text", "")
+  //       .replace("```", "");
+
+  //     // Insert summary into the editor
+  //     const AllText = editor.getHTML();
+  //     editor.commands.setContent(
+  //       AllText + "<p><strong> Summary :</strong>" + Summary + "</p>"
+  //     );
+
+  //     // Save summarized notes
+  //     await saveNotes({
+  //       notes: editor.getHTML(),
+  //       fileId: fileId,
+  //       createdBy: "Admin"
+  //     });
+
+  //     toast.success("Summarization complete and added to your notes!");
+  //   } catch (error) {
+  //     console.error("Error during summarization:", error);
+  //     toast.error("Failed to summarize the PDF content. Please try again.");
+  //   }
+  // };
+
+  // selected text summarize
+  
+  
   const OnSummarizeClick = async () => {
-    toast.info("Summarizing your PDF content...");
+    const selectedText = editor.state.doc.textBetween(
+      editor.state.selection.from,
+      editor.state.selection.to,
+      " "
+    );
+
+    if (!selectedText || selectedText.trim() === "") {
+      toast.error("Please select text to summarize.");
+      return;
+    }
+
+    toast.info("Summarizing the selected text...");
+    console.log("Selected text for summarization:", selectedText);
 
     try {
-      // Fetch relevant data for summarization
-      const result = await SearchAI({
-        query: "Summarize the document",
-        fileId: fileId
-      });
+      const GENERATED_TEXT = generates.summarizeText(selectedText);
+       console.log("Generated summarization prompt:", GENERATED_TEXT);
 
-      console.log("PDF content for summarization:", result);
-
-      // Combine all page content into a single string
-      const UnformattedContent = JSON.parse(result);
-      let fullContent = "";
-      UnformattedContent.forEach((item: { pageContent: string }) => {
-        fullContent += item.pageContent;
-      });
-
-      // Prompt the AI model to summarize
-      const PROMPT =
-        "Please summarize the following document content in concise and clear terms: " +
-        fullContent;
-
-      const AiModelResult = await chatSession.sendMessage(PROMPT);
+      const AiModelResult = await chatSession.sendMessage(GENERATED_TEXT);
       console.log("AI summarization result:", AiModelResult.response.text());
 
       const Summary = AiModelResult.response
@@ -123,12 +177,14 @@ const saveNotes = useMutation(api.notes.AddNotes);
         .replace("text", "")
         .replace("```", "");
 
-      // Insert summary into the editor
+      console.log("Processed summary:", Summary);
+
       const AllText = editor.getHTML();
       editor.commands.setContent(
-        AllText + "<p><strong> Summary :</strong>" + Summary + "</p>"
+        AllText + "<p><strong> Summary :</strong> " + Summary + "</p>"
       );
 
+       console.log("Saving summarized notes with saveNotes mutation.");
       // Save summarized notes
       await saveNotes({
         notes: editor.getHTML(),
@@ -136,14 +192,14 @@ const saveNotes = useMutation(api.notes.AddNotes);
         createdBy: "Admin"
       });
 
+      console.log("Summarized notes saved successfully.");
       toast.success("Summarization complete and added to your notes!");
     } catch (error) {
       console.error("Error during summarization:", error);
-      toast.error("Failed to summarize the PDF content. Please try again.");
+      toast.error("Failed to summarize the selected text. Please try again.");
     }
   };
 
-  
   return (
     editor && (
       <div className="">
@@ -204,120 +260,128 @@ const saveNotes = useMutation(api.notes.AddNotes);
               </button>
             </Tooltip>
             <Tooltip content="Code">
-            {/* code blocks */}
-            <button
-              onClick={() => editor.chain().focus().toggleCode().run()}
-              className={editor.isActive("code") ? "text-blue-500" : ""}
-            >
-              <Code />
-            </button>
+              {/* code blocks */}
+              <button
+                onClick={() => editor.chain().focus().toggleCode().run()}
+                className={editor.isActive("code") ? "text-blue-500" : ""}
+              >
+                <Code />
+              </button>
             </Tooltip>
-             <Tooltip content="Task List">
-            {/* tasks */}
-            <button
-              onClick={() => editor.chain().focus().toggleTaskList().run()}
-              className={editor.isActive("taskList") ? "text-blue-500" : ""}
-            >
-              <SquareCheckBigIcon />
-            </button>
-              </Tooltip>
-              <Tooltip content="Strike through">
-            {/* Strike through button */}
-            <button
-              onClick={() => editor.chain().focus().toggleStrike().run()}
-              className={editor.isActive("strike") ? "text-blue-500" : ""}
-            >
-              <Strikethrough />
-            </button>
-             </Tooltip>
-              <Tooltip content="Subscript">
-            {/* Subscript button  */}
-            <button
-              onClick={() => editor.chain().focus().toggleSubscript().run()}
-              className={editor.isActive("subscript") ? "text-blue-500" : ""}
-            >
-              <Subscript />
-            </button>
-             </Tooltip>
-              <Tooltip content="Superscript">
-            {/* Super Script button */}
-            <button
-              onClick={() => editor.chain().focus().toggleSuperscript().run()}
-              className={editor.isActive("superscript") ? "text-blue-500" : ""}
-            >
-              <Superscript />
-            </button>
-             </Tooltip>
-              <Tooltip content="Hightlight">
-            {/* hightlight */}
-            <button
-              onClick={() =>
-                editor
-                  .chain()
-                  .focus()
-                  .toggleHighlight({ color: "#ffc078" })
-                  .run()
-              }
-              className={
-                editor.isActive("highlight", { color: "#ffc078" })
-                  ? "text-orange-400"
-                  : ""
-              }
-            >
-              <Highlighter />
-            </button>
-             </Tooltip>
-              <Tooltip content="Left align">
-            {/* indentation */}
-            <button
-              onClick={() => editor.chain().focus().setTextAlign("left").run()}
-              className={
-                editor.isActive({ textAlign: "left" }) ? "text-blue-500" : ""
-              }
-            >
-              <AlignLeft />
-            </button>
-             </Tooltip>
-              <Tooltip content="Center">
-            <button
-              onClick={() =>
-                editor.chain().focus().setTextAlign("center").run()
-              }
-              className={
-                editor.isActive({ textAlign: "center" }) ? "text-blue-500" : ""
-              }
-            >
-              <AlignCenter />
-            </button>
-             </Tooltip>
-              <Tooltip content="Right align">
-            <button
-              onClick={() => editor.chain().focus().setTextAlign("right").run()}
-              className={
-                editor.isActive({ textAlign: "right" }) ? "text-blue-500" : ""
-              }
-            >
-              <AlignRight />
-            </button>
-             </Tooltip>
-              <Tooltip content="Ask AI">
-            {/* AI content */}
-            <button
-              onClick={() => OnAiClick()}
-              className={"hover:text-blue-500"}
-            >
-              <AtomIcon />
-            </button>
-             </Tooltip>
-              <Tooltip content="Summarize">
-            {/* Summarize content */}
-            <button
-              onClick={() => OnSummarizeClick()}
-              className={"hover:text-blue-500"}
-            >
-              <NotebookPen />
-            </button>
- </Tooltip>
+            <Tooltip content="Task List">
+              {/* tasks */}
+              <button
+                onClick={() => editor.chain().focus().toggleTaskList().run()}
+                className={editor.isActive("taskList") ? "text-blue-500" : ""}
+              >
+                <SquareCheckBigIcon />
+              </button>
+            </Tooltip>
+            <Tooltip content="Strike through">
+              {/* Strike through button */}
+              <button
+                onClick={() => editor.chain().focus().toggleStrike().run()}
+                className={editor.isActive("strike") ? "text-blue-500" : ""}
+              >
+                <Strikethrough />
+              </button>
+            </Tooltip>
+            <Tooltip content="Subscript">
+              {/* Subscript button  */}
+              <button
+                onClick={() => editor.chain().focus().toggleSubscript().run()}
+                className={editor.isActive("subscript") ? "text-blue-500" : ""}
+              >
+                <Subscript />
+              </button>
+            </Tooltip>
+            <Tooltip content="Superscript">
+              {/* Super Script button */}
+              <button
+                onClick={() => editor.chain().focus().toggleSuperscript().run()}
+                className={
+                  editor.isActive("superscript") ? "text-blue-500" : ""
+                }
+              >
+                <Superscript />
+              </button>
+            </Tooltip>
+            <Tooltip content="Hightlight">
+              {/* hightlight */}
+              <button
+                onClick={() =>
+                  editor
+                    .chain()
+                    .focus()
+                    .toggleHighlight({ color: "#ffc078" })
+                    .run()
+                }
+                className={
+                  editor.isActive("highlight", { color: "#ffc078" })
+                    ? "text-orange-400"
+                    : ""
+                }
+              >
+                <Highlighter />
+              </button>
+            </Tooltip>
+            <Tooltip content="Left align">
+              {/* indentation */}
+              <button
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("left").run()
+                }
+                className={
+                  editor.isActive({ textAlign: "left" }) ? "text-blue-500" : ""
+                }
+              >
+                <AlignLeft />
+              </button>
+            </Tooltip>
+            <Tooltip content="Center">
+              <button
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("center").run()
+                }
+                className={
+                  editor.isActive({ textAlign: "center" })
+                    ? "text-blue-500"
+                    : ""
+                }
+              >
+                <AlignCenter />
+              </button>
+            </Tooltip>
+            <Tooltip content="Right align">
+              <button
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("right").run()
+                }
+                className={
+                  editor.isActive({ textAlign: "right" }) ? "text-blue-500" : ""
+                }
+              >
+                <AlignRight />
+              </button>
+            </Tooltip>
+            <Tooltip content="Ask AI">
+              {/* AI content */}
+              <button
+                onClick={() => OnAiClick()}
+                className={"hover:text-blue-500"}
+              >
+                <AtomIcon />
+              </button>
+            </Tooltip>
+            <Tooltip content="Summarize">
+              {/* Summarize content */}
+              <button
+                onClick={() => OnSummarizeClick()}
+                className={"hover:text-blue-500"}
+              >
+                <NotebookPen />
+              </button>
+            </Tooltip>
             {/* <button
               // onClick={}
               className={"hover:text-blue-500"}

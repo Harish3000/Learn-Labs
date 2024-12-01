@@ -21,7 +21,8 @@ export const ingest = action({
       title: "Document title",
     }),
       { ctx }
-      );
+    );
+    console.log("Ingest action completed for fileId:", args.fileId);
         return "Completed";
   },
 });
@@ -41,7 +42,7 @@ export const search = action({
       }), { ctx });
     
     const resultOne = await (await vectorStore.similaritySearch(args.query, 1)).filter(q => q.metadata.fileId === args.fileId);
-    console.log(resultOne);
+   console.log("Search results for query:", args.query, "Results:", resultOne);
 
     return JSON.stringify(resultOne);
   },

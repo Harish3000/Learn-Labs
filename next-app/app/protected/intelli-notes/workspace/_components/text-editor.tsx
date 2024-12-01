@@ -30,11 +30,14 @@ interface TextEditorProps {
 }
 
 const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
+  console.log("TextEditor component initialized with fileId:", fileId);
   const notes = useQuery(api.notes.GetNotes, {
     fileId: fileId
   });
 
-  console.log("Notes", notes);
+   console.log("Fetching notes for fileId:", fileId);
+  console.log("Fetched notes:", notes);
+  
   const saveNotes = useMutation(api.notes.AddNotes);
 
   const editor = useEditor({
@@ -72,6 +75,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
 
   useEffect(() => {
     if (editor && notes) {
+       console.log("Setting editor content with notes:", notes);
       editor.commands.setContent(notes);
     }
   }, [notes, editor]);
@@ -84,9 +88,11 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
         createdBy: "Admin" // Replace with dynamic user info if needed
       })
         .then(() => {
+          console.log("Notes saved successfully");
           toast.success("Notes saved successfully!");
         })
         .catch((err) => {
+          console.error("Error saving notes:", err);
           toast.error("Error saving notes:", err);
         });
     }
@@ -94,10 +100,12 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
 
   const handleExportToPDF = async () => {
     if (!editor) {
+      console.error("Editor is not initialized.");
       toast.error("Editor is not initialized.");
       return;
     }
 
+    console.log("Exporting notes to PDF");
     const content = editor.getHTML(); // Get the editor content as HTML
     const doc = new jsPDF();
 
@@ -118,6 +126,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
 
     // Trigger download
     doc.save("notes.pdf");
+    console.log("PDF downloaded successfully");
     toast.success("PDF downloaded successfully!");
   };
 

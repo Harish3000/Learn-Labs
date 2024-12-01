@@ -21,9 +21,11 @@ export const AddNotes = mutation({
         notes: args.notes,
         createdBy: args.createdBy
       });
+          console.log("Added new notes for fileId:", args.fileId);
     } else {
       // Update existing record with new notes
-      await ctx.db.patch(record._id, { notes: args.notes });
+          await ctx.db.patch(record._id, { notes: args.notes });
+          console.log("Updated notes for fileId:", args.fileId);
     }
   },
 });
@@ -37,6 +39,6 @@ export const GetNotes = query({
       .query("notes")
       .filter((q) => q.eq(q.field("fileId"),args.fileId))
       .first();
-    return result?.notes?? '';
+    return result?.notes ?? '';
   }
 })
