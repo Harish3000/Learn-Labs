@@ -7,6 +7,8 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const MODEL_NAME = "gemini-1.0-pro";
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY!;
@@ -44,9 +46,9 @@ export default function Home() {
 
       if (!response.ok) {
         console.error("Failed to store summary in database");
-        alert("Failed to submit summary");
+        toast.error("Failed to submit summary");
       } else {
-        alert("Summary submitted successfully!");
+        toast.success("Summary submitted successfully!");
         setSummary(""); // Clear the input after submission
       }
     } catch (error) {
@@ -123,7 +125,7 @@ export default function Home() {
   const handleSubmit = async () => {
     const user = localStorage.getItem("user");
     if (!user) {
-      alert("User not found. Please log in.");
+      toast.error("User not found. Please log in.");
       return;
     }
 
@@ -136,7 +138,7 @@ export default function Home() {
     const accuracy = extractAccuracy(responseData);
 
     if (geminiSummary === "Summary not available" || accuracy === 0) {
-      alert("Failed to generate a valid summary or accuracy.");
+      toast.error("Failed to generate a valid summary or accuracy.");
       return;
     }
 
