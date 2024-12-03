@@ -9,57 +9,31 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export async function GET() {
   try {
     const { data, error } = await supabase
-      .from("summaries") // Replace with your actual table name
-      .select("summary_text")
-      .limit(1)
-      .single();
+      .from("summaries") // Table name
+      .select("*"); // Fetch all columns
 
     if (error) {
-      console.error("Error fetching summary:", error);
-      return NextResponse.json({ error: "Failed to fetch summary text." }, { status: 500 });
+      console.error("Error fetching summaries:", error);
+      return NextResponse.json({ error: "Failed to fetch summaries." }, { status: 500 });
     }
 
-    return NextResponse.json({ summary_text: data?.summary_text || "" });
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }
 }
 
-// POST handler to store analysis
-// export async function POST(req: Request) {
-//   try {
-//     const body = await req.json(); // Parse the incoming JSON
-//     const { analysis } = body; // Extract the analysis from the request body
-
-//     if (!analysis) {
-//       return NextResponse.json({ error: "Analysis text is required." }, { status: 400 });
-//     }
-
-//     // Insert the analysis into the Supabase table
-//     const { data, error } = await supabase
-//       .from("summaries") // Replace with your actual table name
-//       .insert([{ analysis_text: analysis }]); // Store the analysis in the table
-
-//     if (error) {
-//       console.error("Error inserting analysis:", error);
-//       return NextResponse.json({ error: "Failed to store analysis." }, { status: 500 });
-//     }
-
-//     return NextResponse.json({ message: "Analysis stored successfully." });
-//   } catch (error) {
-//     console.error("API Error:", error);
-//     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
-//   }
-// }
-
 export async function POST(req: Request) {
   try {
     const body = await req.json(); // Parse the incoming JSON
-    const { userId, email, firstname, fact_checking, gemini_summary, accuracy } = body;
+
+    console.log("Data Sending : ",body);
+
+    const { uid, email, firstname, gemini_summary, accuracy } = body;
 
     // Validation checks for required fields
-    if (!userId || !email || !firstname || !fact_checking || !gemini_summary || accuracy === undefined) {
+    if (!uid || !email || !firstname || !gemini_summary || accuracy === undefined) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
 
@@ -67,10 +41,9 @@ export async function POST(req: Request) {
     const { data, error } = await supabase
       .from("summaries") // Replace with your actual table name
       .insert([{
-        user_id: userId,
+        uid: uid,
         email,
         firstname,
-        fact_checking,
         gemini_summary,
         accuracy,
       }]);

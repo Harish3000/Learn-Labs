@@ -72,9 +72,9 @@ const Room = ({ params }: { params: { roomid: string } }) => {
         icon: "info",
         confirmButtonText: "OK",
       }).then(() => {
-        router.push("/protected/colab-summary/inputpage"); // Navigate to the end page
+        router.push("/protected/colab-summary/gemini"); // Navigate to the end page
       });
-    }, 10 * 60 * 1000); // 10 minutes in milliseconds
+    }, 1 * 60 * 1000); // 10 minutes in milliseconds
 
     // Clean up the timer when the component unmounts
     return () => {
