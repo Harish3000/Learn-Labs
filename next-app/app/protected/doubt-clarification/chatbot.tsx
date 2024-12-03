@@ -1,124 +1,7 @@
-// "use client";
-// import { FC, useState } from "react";
-// import { FaRobot, FaUser } from "react-icons/fa";
-// import GetChat from "./api/getChat";
-
-// const ChatBotComponent: FC = () => {
-//   const [message, setMessage] = useState("");
-//   const [chat, setChat] = useState<{ user: string; bot: string }[]>([]);
-//   const [loading, setLoading] = useState(false);
-
-//   const handleSend = async () => {
-//     if (!message.trim()) return;
-
-//     const userMessage = message;
-//     setChat((prev) => [...prev, { user: userMessage, bot: "" }]);
-//     setMessage("");
-//     setLoading(true);
-
-//     try {
-//       const data = await GetChat(userMessage);
-
-//       setChat((prev) => {
-//         const updatedChat = [...prev];
-//         updatedChat[updatedChat.length - 1].bot = data; // Bot's response
-//         return updatedChat;
-//       });
-//     } catch (error) {
-//       setChat((prev) => {
-//         const updatedChat = [...prev];
-//         updatedChat[updatedChat.length - 1].bot =
-//           "Sorry, something went wrong. Please try again.";
-//         return updatedChat;
-//       });
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // Helper function to highlight any text inside square brackets
-//   const formatBotResponse = (response: string) => {
-//     // Updated regex to match any content inside square brackets
-//     const bracketedContentRegex = /\[([^\]]+)\]/g;
-//     const parts = response.split(bracketedContentRegex);
-//     const matches = response.match(bracketedContentRegex);
-
-//     return (
-//       <>
-//         {parts.map((part, index) => (
-//           <span key={index}>
-//             {part}
-//             {matches && matches[index] && (
-//               <span className="text-blue-400 text-black font-bold ml-1 p-1 rounded">
-//                 {matches[index]}
-//               </span>
-//             )}
-//           </span>
-//         ))}
-//       </>
-//     );
-//   };
-
-//   return (
-//     <div className="fixed right-4 bottom-16 w-80 h-[85vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col">
-//       {/* Header */}
-//       <div className="bg-gray-900 text-white text-lg font-semibold p-4 rounded-t-lg">
-//         Live Doubt Clarification
-//       </div>
-
-//       {/* Chat Messages */}
-//       <div className="flex-1 p-4 overflow-y-auto space-y-4 text-white">
-//         {chat.map((item, index) => (
-//           <div key={index} className="space-y-1">
-//             <div className="flex items-center space-x-2">
-//               <FaUser className="text-blue-400" />
-//               <p className="text-blue-400 font-semibold">You: {item.user}</p>
-//             </div>
-//             <div className="flex items-center space-x-2">
-//               <FaRobot className="text-gray-400" />
-//               <p className="text-gray-300">
-//                 Bot: {item.bot ? formatBotResponse(item.bot) : "Loading..."}
-//               </p>
-//             </div>
-//           </div>
-//         ))}
-//         {loading && (
-//           <div className="flex items-center space-x-2">
-//             <FaRobot className="text-gray-400" />
-//             <p className="text-gray-300">Bot: Thinking...</p>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Input Box */}
-//       <div className="flex p-4 border-t border-gray-700">
-//         <input
-//           type="text"
-//           value={message}
-//           onChange={(e) => setMessage(e.target.value)}
-//           className="flex-1 bg-gray-700 text-white border border-gray-600 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//           placeholder="Type your question here..."
-//         />
-//         <button
-//           onClick={handleSend}
-//           disabled={loading}
-//           className={`ml-2 p-2 rounded-lg transition duration-200 ${
-//             loading
-//               ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-//               : "bg-blue-600 text-white hover:bg-blue-700"
-//           }`}
-//         >
-//           {loading ? "Send.." : "Send"}
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
 // export default ChatBotComponent;
 import { createClient } from "@supabase/supabase-js";
 import { FC, useState } from "react";
-import { FaRobot, FaThumbsUp, FaUser } from "react-icons/fa";
+import { FaFlag, FaRobot, FaThumbsUp, FaUser } from "react-icons/fa";
 import GetChat from "./api/getChat";
 
 // Initialize Supabase client using environment variables
@@ -130,7 +13,7 @@ const supabase = createClient(
 const ChatBotComponent: FC = () => {
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState<
-    { user: string; bot: string; liked: boolean }[]
+    { user: string; bot: string; liked: boolean; disliked: boolean }[]
   >([]);
   const [loading, setLoading] = useState(false);
 
@@ -138,7 +21,10 @@ const ChatBotComponent: FC = () => {
     if (!message.trim()) return;
 
     const userMessage = message;
-    setChat((prev) => [...prev, { user: userMessage, bot: "", liked: false }]);
+    setChat((prev) => [
+      ...prev,
+      { user: userMessage, bot: "", liked: false, disliked: false },
+    ]);
     setMessage("");
     setLoading(true);
 
@@ -178,10 +64,14 @@ const ChatBotComponent: FC = () => {
       ]);
       if (error) throw error;
 
-      // Update the chat state to reflect that the feedback has been given
+      // Update the chat state to reflect that feedback has been given
       setChat((prev) => {
         const updatedChat = [...prev];
-        updatedChat[index].liked = true;
+        updatedChat[index] = {
+          ...updatedChat[index],
+          liked: thumbsUp,
+          disliked: !thumbsUp,
+        };
         return updatedChat;
       });
 
@@ -192,28 +82,56 @@ const ChatBotComponent: FC = () => {
   };
 
   const formatBotResponse = (response: string) => {
-    const bracketedContentRegex = /\[([^\]]+)\]/g;
-    const parts = response.split(bracketedContentRegex);
-    const matches = response.match(bracketedContentRegex);
+    try {
+      // Parse the response as JSON
+      const parsedResponse = JSON.parse(response);
 
-    return (
-      <>
-        {parts.map((part, index) => (
-          <span key={index}>
-            {part}
-            {matches && matches[index] && (
-              <span className="text-blue-400 text-black font-bold ml-1 p-1 rounded">
-                {matches[index]}
-              </span>
-            )}
-          </span>
-        ))}
-      </>
-    );
+      if (parsedResponse.res && parsedResponse.timestamp) {
+        return (
+          <div className="text-gray-300">
+            <p className="text-white">{parsedResponse.res}</p>
+            <div className="mt-2">
+              <strong className="text-gray-400">Timestamps:</strong>
+              <div className="mt-1 flex flex-wrap">
+                {/* Split the timestamps by commas if it's a string */}
+                {typeof parsedResponse.timestamp === "string"
+                  ? parsedResponse.timestamp
+                      .split(", ")
+                      .map((time: string, index: number) => (
+                        <span
+                          key={index}
+                          className="text-blue-500 font-bold ml-1 p-1 rounded"
+                        >
+                          {time}
+                        </span>
+                      ))
+                  : parsedResponse.timestamp.map(
+                      (time: number, index: number) => (
+                        <span
+                          key={index}
+                          className="text-blue-500 font-bold ml-1 p-1 rounded"
+                        >
+                          {time.toFixed(2)}s
+                        </span>
+                      )
+                    )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Fallback to raw response if parsing doesn't yield expected fields
+      return <p className="text-gray-300">{response}</p>;
+    } catch (error) {
+      console.error("Failed to parse response:", error);
+      // Return the raw response if parsing fails
+      return <p className="text-gray-300">{response}</p>;
+    }
   };
 
   return (
-    <div className="fixed right-4 bottom-16 w-80 h-[85vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col">
+    <div className="fixed right-4 bottom-16 w-80 h-[85vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col overflow-hidden">
       {/* Header */}
       <div className="bg-gray-900 text-white text-lg font-semibold p-4 rounded-t-lg">
         Live Doubt Clarification
@@ -229,20 +147,36 @@ const ChatBotComponent: FC = () => {
             </div>
             <div className="flex items-center space-x-2">
               <FaRobot className="text-gray-400" />
-              <p className="text-gray-300">
-                Bot: {item.bot ? formatBotResponse(item.bot) : "Loading..."}
-              </p>
+              <div className="text-gray-300 text-container break-words">
+                {item.bot ? formatBotResponse(item.bot) : "Loading..."}
+              </div>
               {item.bot && (
-                <button
-                  onClick={() => sendFeedback(item.user, item.bot, true, index)}
-                  className={`ml-2 p-1 transition duration-200 ${
-                    item.liked
-                      ? "text-green-500"
-                      : "text-gray-400 hover:text-green-500"
-                  }`}
-                >
-                  <FaThumbsUp />
-                </button>
+                <div className="ml-2 space-x-2">
+                  <button
+                    onClick={() =>
+                      sendFeedback(item.user, item.bot, true, index)
+                    }
+                    className={`p-1 transition duration-200 ${
+                      item.liked
+                        ? "text-green-500"
+                        : "text-gray-400 hover:text-green-500"
+                    }`}
+                  >
+                    <FaThumbsUp />
+                  </button>
+                  <button
+                    onClick={() =>
+                      sendFeedback(item.user, item.bot, false, index)
+                    }
+                    className={`p-1 transition duration-200 ${
+                      item.disliked
+                        ? "text-red-500"
+                        : "text-gray-400 hover:text-red-500"
+                    }`}
+                  >
+                    <FaFlag />
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -273,7 +207,7 @@ const ChatBotComponent: FC = () => {
               : "bg-blue-600 text-white hover:bg-blue-700"
           }`}
         >
-          {loading ? "Send.." : "Send"}
+          {loading ? "Sending..." : "Send"}
         </button>
       </div>
     </div>

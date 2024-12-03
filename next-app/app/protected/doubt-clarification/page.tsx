@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FaFileAlt, FaMicrophone, FaRegCommentDots } from "react-icons/fa"; // Icons from react-icons
-import GetTranscript from "./api/getTranscript";
+import GetTranscript from "./api/getT";
 import ChatBotComponent from "./chatbot";
 
 const DoubtClarification = (props: { searchParams: any }) => {
@@ -17,8 +17,8 @@ const DoubtClarification = (props: { searchParams: any }) => {
     };
   }, []);
 
-  const handleFetchTranscript = () => {
-    setFetchTranscript(true);
+  const handleFetchTranscript = async () => {
+    await GetTranscript();
   };
 
   return (
@@ -46,16 +46,6 @@ const DoubtClarification = (props: { searchParams: any }) => {
             Fetch Transcript
           </button>
         </div>
-
-        {/* Conditionally render GetTranscript */}
-        {fetchTranscript && (
-          <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
-            <GetTranscript req="a" res="b" />
-            <p className="text-green-600 mt-2 text-center">
-              Transcript fetched successfully! Interact with the chatbot below.
-            </p>
-          </div>
-        )}
 
         {/* ChatBot Section */}
         <div className="mt-8 bg-white p-6 rounded-lg shadow-md border border-gray-200">

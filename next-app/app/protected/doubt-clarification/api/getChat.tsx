@@ -50,20 +50,22 @@ const generateResponse = async (context: string, question: string) => {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   // Create the prompt for the model
-
-  //   const prompt = `
-  //   You are a helpful assistant. If context is provided, include relevant timestamps and details in your response to refer to specific parts. If there is no context given, provide a short, general answer that is relevant to the question.
-  //   Context: ${context} Question: ${question}Note: If there is no context provided, please respond in a clear, concise manner without additional details or references.`;
-  //   const prompt = `You are a helpful assistant.\n\nContext:\n${context}\n\nQuestion:\n${question}`;
   const prompt = `
   You are a helpful assistant. If context is provided, refer to relevant timestamps and details in your response. If no context is provided, respond with a concise, general answer to the question.
   Context: ${context} Question: ${question} 
-  Note: Ensure your responses are clear, direct, and avoid repetitive phrases such as "The provided text" or "Based on the provided."
+  The response should be a JSON object with the following structure:
+  {res: response_text, timestamp: refer to relevant timestamps} Send only the json object starting from {, nothing else.
+  Note: Ensure your responses are clear, direct, very short,not send timestamp in res section only in timestamp section, Direct and avoid repetitive phrases such as "The provided text" or "Based on the provided.
   `;
 
   try {
     // Generate content using the model with the prompt
     const result = await model.generateContent(prompt);
+    console.log(result);
+    const x = result.response.text();
+    console.log(x);
+    const y = JSON.parse(x);
+    console.log(y);
 
     // Return the response content from the model
     return result.response.text();

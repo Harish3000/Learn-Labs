@@ -40,7 +40,7 @@ const generateEmbedding = async (text: string) => {
 };
 
 // Main API route handler
-export default async function GetTranscript(req: any, res: any) {
+export default async function GetTranscript() {
   // Extract lecture and video metadata from the request, e.g., video_id and lecture_id
   // const video_id = "j1eO9UOi-sc";
   // const lecture_id = "1";
@@ -101,12 +101,9 @@ export default async function GetTranscript(req: any, res: any) {
         return data;
       })
     );
-
-    return <></>;
   } catch (error) {
     console.error(error);
     const errorMessage =
       error instanceof Error ? error.message : "Failed to process transcript";
-    res.status(500).json({ error: errorMessage });
   }
 }
