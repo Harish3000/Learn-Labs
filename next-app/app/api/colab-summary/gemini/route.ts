@@ -7,6 +7,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
+  console.log("Fetching student submitted summaries...")
   try {
     const { data, error } = await supabase
       .from("summaries") // Table name
@@ -17,6 +18,9 @@ export async function GET() {
       return NextResponse.json({ error: "Failed to fetch summaries." }, { status: 500 });
     }
 
+    console.log("Successfully fetched the summaries...");
+    console.log("Summary data : ",data);
+
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error("API Error:", error);
@@ -25,6 +29,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  console.log("Submitting Summaries to database...");
+  console.log("Integrating API...");
   try {
     const body = await req.json(); // Parse the incoming JSON
 
@@ -36,6 +42,8 @@ export async function POST(req: Request) {
     if (!uid || !email || !firstname || !gemini_summary || accuracy === undefined) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
+
+    console.log("Loading...");
 
     // Insert the data into the Supabase table
     const { data, error } = await supabase
@@ -54,6 +62,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to store summary." }, { status: 500 });
     }
 
+    console.log("Summaries stored successfully...");
+    console.log("API Integrated success!!");
     // Return a success response
     return NextResponse.json({ message: "Summary stored successfully." });
 
