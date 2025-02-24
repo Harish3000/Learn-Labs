@@ -24,20 +24,29 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import { Tooltip } from "@nextui-org/tooltip";
+import {
+  FacebookShare,
+  LinkedinShare,
+  TelegramShare,
+  WhatsappShare,
+  EmailShare,
+} from "react-share-kit";
 
 interface TextEditorProps {
   fileId: string;
+  fileName: string;
 }
 
-const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
+const TextEditor: React.FC<TextEditorProps> = ({ fileId, fileName }) => {
   console.log("TextEditor component initialized with fileId:", fileId);
   const notes = useQuery(api.notes.GetNotes, {
     fileId: fileId
   });
 
-   console.log("Fetching notes for fileId:", fileId);
+  console.log("Fetching notes for fileId:", fileId);
   console.log("Fetched notes:", notes);
-  
+
   const saveNotes = useMutation(api.notes.AddNotes);
 
   const editor = useEditor({
@@ -75,7 +84,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
 
   useEffect(() => {
     if (editor && notes) {
-       console.log("Setting editor content with notes:", notes);
+      console.log("Setting editor content with notes:", notes);
       editor.commands.setContent(notes);
     }
   }, [notes, editor]);
@@ -130,6 +139,12 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
     toast.success("PDF downloaded successfully!");
   };
 
+   const shareUrl =
+     typeof window !== "undefined"
+       ? `${window.location.origin}/workspace/${fileName}`
+       : "";
+
+   const shareTitle = `Check out my notes on "${fileName}" using IntelliNote:`;
   return (
     <div>
       <div className="flex-2 flex justify-end gap-2">
@@ -139,6 +154,37 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId }) => {
         <Button onClick={handleExportToPDF} size="sm">
           Export
         </Button>
+        {/* Social Share Buttons */}
+          <Button className=''>
+            <FacebookShare
+              url={shareUrl}
+              quote={shareTitle}
+              className="w-20 h-20 hover:bg-blue-100 [&>svg]:w-20 [&>svg]:h-20"
+            />
+          </Button>
+          <Button>
+            <LinkedinShare
+              url={shareUrl}
+              title={shareTitle}
+              className="w-20 h-20 hover:bg-blue-100 [&>svg]:w-4 [&>svg]:h-4"
+            />
+          </Button>
+
+          <Button>
+            <TelegramShare
+              url={shareUrl}
+              title={shareTitle}
+              className="rounded-full w-8 h-8 hover:bg-blue-100 [&>svg]:w-4 [&>svg]:h-4"
+            />
+          </Button>
+
+          <Button content="Share on Whatsapp">
+            <WhatsappShare
+              url={shareUrl}
+              title={shareTitle}
+              className="rounded-full w-8 h-8 hover:bg-blue-100 [&>svg]:w-4 [&>svg]:h-4"
+            />
+          </Button>
       </div>
       <EditorExtension editor={editor} />
       <div className="overflow-scroll h-[88]">

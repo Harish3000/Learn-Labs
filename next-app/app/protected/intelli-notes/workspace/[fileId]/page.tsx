@@ -24,7 +24,7 @@ const Workspace: React.FC = () => {
     <div className="grid grid-cols-2">
       <div>
         {/* Text editor */}
-        <TextEditor fileId={fileId} />
+        <TextEditor fileId={fileId} fileName={fileInfo?.fileName || "Untitled"} />
       </div>
       <div>
         {/* Pdf viewer */}

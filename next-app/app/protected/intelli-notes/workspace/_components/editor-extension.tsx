@@ -31,7 +31,9 @@ interface EditorExtensionProps {
   editor: any;
 }
 
-const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
+const EditorExtension: React.FC<EditorExtensionProps> = ({
+  editor
+}) => {
   const params = useParams() as { fileId: string };
   const { fileId } = params;
   const SearchAI = useAction(api.myAction.search);
@@ -65,7 +67,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
       AllUnformattedAns
     );
 
-     console.log("Generated text for AI:", GENERATED_TEXT);
+    console.log("Generated text for AI:", GENERATED_TEXT);
 
     const AiModelResult = await chatSession.sendMessage(GENERATED_TEXT);
     console.log(AiModelResult.response.text());
@@ -74,7 +76,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
       .replace("```", "")
       .replace("html", "")
       .replace("```", "");
-    
+
     console.log("Final processed answer:", FinalAns);
 
     const AllText = editor.getHTML();
@@ -92,63 +94,8 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
     toast.success("Intellinote has successfully added your answer");
   };
 
-  // 1st docunent
-  // const OnSummarizeClick = async () => {
-  //   toast.info("Summarizing your PDF content...");
-
-  //   try {
-  //     // Fetch relevant data for summarization
-  //     const result = await SearchAI({
-  //       query: "Summarize the document",
-  //       fileId: fileId
-  //     });
-
-  //     console.log("PDF content for summarization:", result);
-
-  //     // Combine all page content into a single string
-  //     const UnformattedContent = JSON.parse(result);
-  //     let fullContent = "";
-  //     UnformattedContent.forEach((item: { pageContent: string }) => {
-  //       fullContent += item.pageContent;
-  //     });
-
-  //     // Prompt the AI model to summarize
-  //     const GENERATED_TEXT =
-  //       "Please summarize the following document content in concise and clear terms: " +
-  //       fullContent;
-
-  //     const AiModelResult = await chatSession.sendMessage(GENERATED_TEXT);
-  //     console.log("AI summarization result:", AiModelResult.response.text());
-
-  //     const Summary = AiModelResult.response
-  //       .text()
-  //       .replace("```", "")
-  //       .replace("text", "")
-  //       .replace("```", "");
-
-  //     // Insert summary into the editor
-  //     const AllText = editor.getHTML();
-  //     editor.commands.setContent(
-  //       AllText + "<p><strong> Summary :</strong>" + Summary + "</p>"
-  //     );
-
-  //     // Save summarized notes
-  //     await saveNotes({
-  //       notes: editor.getHTML(),
-  //       fileId: fileId,
-  //       createdBy: "Admin"
-  //     });
-
-  //     toast.success("Summarization complete and added to your notes!");
-  //   } catch (error) {
-  //     console.error("Error during summarization:", error);
-  //     toast.error("Failed to summarize the PDF content. Please try again.");
-  //   }
-  // };
-
   // selected text summarize
-  
-  
+
   const OnSummarizeClick = async () => {
     const selectedText = editor.state.doc.textBetween(
       editor.state.selection.from,
@@ -166,7 +113,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
 
     try {
       const GENERATED_TEXT = generates.summarizeText(selectedText);
-       console.log("Generated summarization prompt:", GENERATED_TEXT);
+      console.log("Generated summarization prompt:", GENERATED_TEXT);
 
       const AiModelResult = await chatSession.sendMessage(GENERATED_TEXT);
       console.log("AI summarization result:", AiModelResult.response.text());
@@ -184,7 +131,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
         AllText + "<p><strong> Summary :</strong> " + Summary + "</p>"
       );
 
-       console.log("Saving summarized notes with saveNotes mutation.");
+      console.log("Saving summarized notes with saveNotes mutation.");
       // Save summarized notes
       await saveNotes({
         notes: editor.getHTML(),
@@ -199,6 +146,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({ editor }) => {
       toast.error("Failed to summarize the selected text. Please try again.");
     }
   };
+
 
   return (
     editor && (
