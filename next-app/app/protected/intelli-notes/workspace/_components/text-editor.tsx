@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -30,8 +30,9 @@ import {
   LinkedinShare,
   TelegramShare,
   WhatsappShare,
-  EmailShare,
+ EmailShare 
 } from "react-share-kit";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 interface TextEditorProps {
   fileId: string;
@@ -40,6 +41,7 @@ interface TextEditorProps {
 
 const TextEditor: React.FC<TextEditorProps> = ({ fileId, fileName }) => {
   console.log("TextEditor component initialized with fileId:", fileId);
+
   const notes = useQuery(api.notes.GetNotes, {
     fileId: fileId
   });
@@ -139,52 +141,66 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId, fileName }) => {
     toast.success("PDF downloaded successfully!");
   };
 
-   const shareUrl =
-     typeof window !== "undefined"
-       ? `${window.location.origin}/workspace/${fileName}`
-       : "";
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-   const shareTitle = `Check out my notes on "${fileName}" using IntelliNote:`;
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/workspace/${fileName}`
+      : "";
+
+  const shareTitle = `Check out my notes on "${fileName}" using IntelliNote:`;
+
+  // Handler to toggle the share modal visibility
+  const toggleShareModal = () => {
+    setIsShareModalOpen(!isShareModalOpen);
+  };
   return (
     <div>
-      <div className="flex-2 flex justify-end gap-2">
+      <div className="flex-2 flex justify-end gap-2 mb-5">
         <Button size="sm" onClick={handleSave}>
           Save
         </Button>
         <Button onClick={handleExportToPDF} size="sm">
           Export
         </Button>
-        {/* Social Share Buttons */}
-          <Button className=''>
-            <FacebookShare
-              url={shareUrl}
-              quote={shareTitle}
-              className="w-20 h-20 hover:bg-blue-100 [&>svg]:w-20 [&>svg]:h-20"
-            />
-          </Button>
-          <Button>
-            <LinkedinShare
-              url={shareUrl}
-              title={shareTitle}
-              className="w-20 h-20 hover:bg-blue-100 [&>svg]:w-4 [&>svg]:h-4"
-            />
-          </Button>
 
-          <Button>
-            <TelegramShare
-              url={shareUrl}
-              title={shareTitle}
-              className="rounded-full w-8 h-8 hover:bg-blue-100 [&>svg]:w-4 [&>svg]:h-4"
-            />
-          </Button>
+       {/* Share Via Button */}
+        <Dialog open={isShareModalOpen} onOpenChange={setIsShareModalOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm">Share Via</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Share Your Notes</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-wrap justify-center gap-4 pt-1 pb-1">
+              <Tooltip content="Facebook" placement="bottom">
+                  <FacebookShare url={shareUrl} quote={shareTitle} className="w-100 h-20 text-white fill-current" round blankTarget />
+              </Tooltip>
+              <Tooltip content="LinkedIn" placement="bottom">
+                  <LinkedinShare url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round  blankTarget/>
+              </Tooltip>
+              <Tooltip content="Telegram" placement="bottom">
+                  <TelegramShare url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round  blankTarget/>
+              </Tooltip>
+              <Tooltip content="WhatsApp" placement="bottom">              
+                  <WhatsappShare url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round blankTarget/>           
+              </Tooltip>
+                   <Tooltip content="WhatsApp" placement="bottom">    
+                    <EmailShare
+ url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round blankTarget
+  subject={'IntelliNote lecture Note'}
+  body={shareTitle}
+/>          
+                 
+              </Tooltip>
+            </div>
+            <div className="mt-1 flex justify-end">
+              <Button onClick={() => setIsShareModalOpen(false)}>Close</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
-          <Button content="Share on Whatsapp">
-            <WhatsappShare
-              url={shareUrl}
-              title={shareTitle}
-              className="rounded-full w-8 h-8 hover:bg-blue-100 [&>svg]:w-4 [&>svg]:h-4"
-            />
-          </Button>
       </div>
       <EditorExtension editor={editor} />
       <div className="overflow-scroll h-[88]">
