@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createCourseSchema } from "@/validators/course";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { motion } from "framer-motion";
 import {
   Form,
   FormControl,
@@ -14,35 +13,17 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Plus, Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-const createCourseSchema = z.object({
-  title: z
-    .string()
-    .min(1, "Title is required")
-    .max(100, "Title must be 100 characters or less"),
-  links: z
-    .array(
-      z
-        .string()
-        .url("A valid URL is required")
-        .regex(
-          /^https:\/\/(www\.)?(youtube\.com|youtu\.be)\/.+$/,
-          "Link must be a valid YouTube URL"
-        )
-    )
-    .min(1, "At least one link is required"),
-});
+type Input = z.infer<typeof createCourseSchema>;
 
-type FormData = z.infer<typeof createCourseSchema>;
-
-export default function CreateCourseForm() {
+const CreateCourseForm = () => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const form = useForm<FormData>({
+  const form = useForm<Input>({
     resolver: zodResolver(createCourseSchema),
     defaultValues: {
       title: "",
@@ -50,42 +31,42 @@ export default function CreateCourseForm() {
     },
   });
 
-  async function onSubmit(data: FormData) {
-    setIsLoading(true);
+  async function onSubmit(data: Input) {
+    console.log("Submitting form data:", data);
     try {
       const response = await fetch("/api/active-learning/create-course", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error("Failed to create course");
-      const result = await response.json();
-      router.push(
-        `/protected/active-learning/create-course/verify?urls=${encodeURIComponent(JSON.stringify(data.links))}`
-      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Course created successfully:", result);
+        router.push(
+          `/protected/active-learning/create-course/verify?urls=${encodeURIComponent(JSON.stringify(data.links))}`
+        );
+      } else {
+        console.error("Failed to create course:", await response.text());
+      }
     } catch (error) {
-      console.error("Error creating course:", error);
-    } finally {
-      setIsLoading(false);
+      console.error("Error submitting form:", error);
     }
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="w-full max-w-xl mx-auto"
-    >
+    <div className="w-full">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="w-full mt-4">
           <FormField
             control={form.control}
             name="title"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xl">Course Title</FormLabel>
-                <FormControl>
+              <FormItem className="flex flex-col items-start w-full sm:items-center sm:flex-row">
+                <FormLabel className="flex-[1] text-xl">Title</FormLabel>
+                <FormControl className="flex-[6]">
                   <Input
                     placeholder="Enter the main topic of the course"
                     {...field}
@@ -94,57 +75,75 @@ export default function CreateCourseForm() {
               </FormItem>
             )}
           />
-          {form.watch("links").map((_, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <FormField
-                control={form.control}
-                name={`links.${index}`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xl">
-                      YouTube Link {index + 1}
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter YouTube URL" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </motion.div>
-          ))}
-          <Separator className="flex-[1]" />
-          <div className="flex justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                form.setValue("links", [...form.watch("links"), ""])
-              }
-            >
-              Add Link <Plus className="w-4 h-4 ml-2" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                form.setValue("links", form.watch("links").slice(0, -1))
-              }
-              disabled={form.watch("links").length <= 1}
-            >
-              Remove Link <Trash className="w-4 h-4 ml-2" />
-            </Button>
+          <AnimatePresence>
+            {form.watch("links").map((_, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{
+                  opacity: { duration: 0.2 },
+                  height: { duration: 0.2 },
+                }}
+              >
+                <FormField
+                  control={form.control}
+                  name={`links.${index}`}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-start w-full sm:items-center sm:flex-row mt-4">
+                      <FormLabel className="flex-[1] text-xl">
+                        Link {index + 1}
+                      </FormLabel>
+                      <FormControl className="flex-[6]">
+                        <Input
+                          placeholder="Enter YouTube or Google Drive URL"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          <div className="flex items-center justify-center mt-4">
+            <Separator className="flex-[1]" />
+            <div className="mx-4">
+              <Button
+                type="button"
+                variant="secondary"
+                className="font-semibold"
+                onClick={() => {
+                  form.setValue("links", [...form.watch("links"), ""]);
+                }}
+              >
+                Add Link
+                <Plus className="w-4 h-4 ml-2 text-green-500" />
+              </Button>
+
+              <Button
+                type="button"
+                variant="secondary"
+                className="font-semibold ml-2"
+                onClick={() => {
+                  form.setValue("links", form.watch("links").slice(0, -1));
+                }}
+              >
+                Remove Link
+                <Trash className="w-4 h-4 ml-2 text-red-500" />
+              </Button>
+            </div>
+            <Separator className="flex-[1]" />
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Creating Course..." : "Create Course"}
+          <Button type="submit" className="w-full mt-6" size="lg">
+            Create Course
           </Button>
         </form>
       </Form>
-    </motion.div>
+    </div>
   );
-}
+};
+
+export default CreateCourseForm;

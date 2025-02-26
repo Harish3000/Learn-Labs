@@ -1,4 +1,3 @@
-// validators/course.ts
 import { z } from "zod";
 
 export const createCourseSchema = z.object({
@@ -12,8 +11,8 @@ export const createCourseSchema = z.object({
         .string()
         .url("A valid URL is required")
         .regex(
-          /^https:\/\/(www\.)?(youtube\.com|youtu\.be)\/.+$/,
-          "Link must be a valid YouTube URL"
+          /^https:\/\/(www\.)?(youtube\.com|youtu\.be|drive\.google\.com)\/.+$/,
+          "Link must be a valid YouTube or Google Drive URL"
         )
     )
     .min(1, "At least one link is required"),

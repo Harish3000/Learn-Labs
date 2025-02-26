@@ -1,7 +1,7 @@
+import React from "react";
 import { checkRole } from "@/utils/checkRoles";
 import { InfoIcon } from "lucide-react";
 import CreateCourseForm from "./components/CreateCourseForm";
-import { Separator } from "@/components/ui/separator";
 
 const CreateCourse = async () => {
   const user = await checkRole(["admin"]);
@@ -11,9 +11,12 @@ const CreateCourse = async () => {
       <h2 className="self-center text-3xl font-bold text-center sm:text-6xl">
         Create Course
       </h2>
-      <div className="flex p-4 mt-8 mb-8 border-none bg-secondary">
-        <InfoIcon className="w-6 h-6 mr-3 text-blue-400" />
-        <div>Add course title and YouTube video links</div>
+      <div className="flex p-4 mt-5 border-none bg-secondary">
+        <InfoIcon className="w-12 h-12 mr-3 text-blue-400" />
+        <div>
+          Provide Lecture video links to create chapter-wise Questions with
+          varying difficulties using AI .
+        </div>
       </div>
       <CreateCourseForm />
     </div>

@@ -1,43 +1,90 @@
 import { NextResponse } from "next/server";
-
-const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY!;
+import { createCourseSchema } from "@/validators/course";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(req: Request) {
   try {
-    const { title, links } = await req.json();
+    const body = await req.json();
+    const { title, links } = createCourseSchema.parse(body);
+    const supabase = await createClient();
 
-    const videoIds = links
-      .map((url: string) => {
-        const urlObj = new URL(url);
-        return urlObj.searchParams.get("v");
+    // Insert lecture data into Supabase
+    const { data: lectureData, error: lectureError } = await supabase
+      .from("lectures")
+      .insert({
+        lecture_title: title,
+        description: "N/A",
+        playlist_id: "N/A",
+        upload_date: new Date().toISOString(),
+        is_active: true,
+        joined_students: "N/A",
       })
-      .filter(Boolean);
+      .select();
 
-    const videoInfoPromises = videoIds.map(async (videoId: string) => {
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${API_KEY}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch video info");
-      const data = await response.json();
-      const video = data.items[0];
-      return {
-        id: videoId,
-        title: video.snippet.title,
-        publishedAt: video.snippet.publishedAt,
-        channelTitle: video.snippet.channelTitle,
-        duration: video.contentDetails.duration,
-        thumbnail: video.snippet.thumbnails.medium.url,
-      };
+    if (lectureError) {
+      throw new Error(`Error inserting lecture: ${lectureError.message}`);
+    }
+
+    const lectureId = lectureData[0].lecture_id;
+
+    // Insert video data into Supabase
+    for (let i = 0; i < links.length; i++) {
+      const videoUrl = links[i];
+      let videoId, source;
+
+      if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be")) {
+        const match = videoUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+        videoId = match ? match[1] : null;
+        source = "youtube";
+      } else if (videoUrl.includes("drive.google.com")) {
+        const match = videoUrl.match(/\/d\/(.*)\/view/);
+        videoId = match ? match[1] : null;
+        source = "google_drive";
+      } else {
+        console.error(`Invalid URL: ${videoUrl}`);
+        throw new Error(`Invalid URL: ${videoUrl}`);
+      }
+
+      if (!videoId) {
+        console.error("video_id cannot be null or empty");
+        throw new Error("video_id cannot be null or empty");
+      }
+
+      const { data: existingVideo } = await supabase
+        .from("videos")
+        .select("video_id")
+        .eq("video_id", videoId)
+        .single();
+
+      if (existingVideo) {
+        console.error(`Duplicate video_id found: ${videoId}`);
+        throw new Error(`Duplicate video_id: ${videoId}`);
+      }
+
+      const { error: videoError } = await supabase.from("videos").insert({
+        lecture_id: lectureId,
+        video_id: videoId,
+        video_title: `Video ${i + 1}`,
+        video_url: videoUrl,
+        duration_seconds: 0,
+        start_timestamp: new Date().toISOString(),
+        end_timestamp: new Date().toISOString(),
+        video_sequence: i + 1,
+        active_students: "N/A",
+        source: source,
+      });
+
+      if (videoError) {
+        throw new Error(`Error inserting video: ${videoError.message}`);
+      }
+    }
+
+    return NextResponse.json({
+      message: "Course created successfully",
+      lectureId,
     });
-
-    const videoInfo = await Promise.all(videoInfoPromises);
-
-    // Here you would typically save the course and video info to your database
-    // For this example, we'll just return the collected data
-
-    return NextResponse.json({ title, videoInfo });
   } catch (error) {
-    console.error("Error in create-course route:", error);
+    console.error("Error creating course:", error);
     return NextResponse.json(
       { error: "Failed to create course" },
       { status: 500 }

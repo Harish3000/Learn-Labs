@@ -7,16 +7,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { CheckCircle, XCircle } from "lucide-react";
-
-interface VideoInfo {
-  id: string;
-  title: string;
-  publishedAt: string;
-  channelTitle: string;
-  duration: string;
-  thumbnail: string;
-  verified: boolean;
-}
+import { VideoInfo } from "@/types/video";
 
 export default function VerifyPage() {
   const [videoInfo, setVideoInfo] = useState<VideoInfo[]>([]);
@@ -30,17 +21,24 @@ export default function VerifyPage() {
       if (!urlsParam) return;
 
       const urls = JSON.parse(decodeURIComponent(urlsParam));
-      const response = await fetch("/api/active-learning/create-course", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ links: urls }),
-      });
+      try {
+        const response = await fetch("/api/active-learning/verify-videos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ urls }),
+        });
 
-      if (!response.ok) throw new Error("Failed to fetch video info");
-      const data = await response.json();
-      setVideoInfo(
-        data.videoInfo.map((video: any) => ({ ...video, verified: false }))
-      );
+        if (response.ok) {
+          const fetchedInfo = await response.json();
+          setVideoInfo(fetchedInfo);
+        } else {
+          console.error("Failed to fetch video info:", await response.text());
+        }
+      } catch (error) {
+        console.error("Error fetching video info:", error);
+      }
       setIsLoading(false);
     };
 
@@ -58,6 +56,13 @@ export default function VerifyPage() {
   const allVerified =
     videoInfo.length > 0 && videoInfo.every((video) => video.verified);
 
+  const handleStartConversion = () => {
+    const verifiedVideos = videoInfo.filter((video) => video.verified);
+    router.push(
+      `/protected/active-learning/process?videos=${encodeURIComponent(JSON.stringify(verifiedVideos))}`
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -74,7 +79,7 @@ export default function VerifyPage() {
         transition={{ duration: 0.5 }}
         className="text-3xl font-bold mb-6 text-center"
       >
-        Verify YouTube Videos
+        Verify Videos
       </motion.h1>
 
       <motion.div
@@ -93,24 +98,29 @@ export default function VerifyPage() {
             <Card>
               <CardContent className="p-4">
                 <Image
-                  src={video.thumbnail}
+                  src={
+                    video.thumbnail && video.thumbnail.trim() !== ""
+                      ? video.thumbnail
+                      : "/placeholder.png"
+                  }
                   alt={video.title}
                   width={320}
                   height={180}
                   className="w-full h-auto mb-4 rounded"
                 />
                 <h2 className="text-xl font-semibold mb-2">{video.title}</h2>
-                <p>Channel: {video.channelTitle}</p>
-                <p>
-                  Published: {new Date(video.publishedAt).toLocaleDateString()}
-                </p>
-                <p>Duration: {video.duration}</p>
+                <p>Source: {video.source}</p>
+                <p>Duration: {video.duration || "N/A"}</p>
               </CardContent>
               <CardFooter>
                 <Button
                   onClick={() => toggleVerified(video.id)}
                   variant={video.verified ? "default" : "outline"}
-                  className={`w-full ${video.verified ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600"}`}
+                  className={`w-full ${
+                    video.verified
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-blue-500 hover:bg-blue-600"
+                  }`}
                 >
                   {video.verified ? (
                     <CheckCircle className="mr-2 h-4 w-4" />
@@ -132,14 +142,13 @@ export default function VerifyPage() {
         className="flex justify-center"
       >
         <Button
+          onClick={handleStartConversion}
           disabled={!allVerified}
-          className={`w-64 h-16 text-xl ${allVerified ? "bg-green-500 hover:bg-green-600 text-white" : "bg-gray-300 text-gray-500"}`}
-          onClick={() => {
-            // Here you would typically save the verified course data
-            // For this example, we'll just log it and go back to the create course page
-            console.log("Verified course data:", videoInfo);
-            router.push("/protected/active-learning/create-course");
-          }}
+          className={`w-64 h-16 text-xl ${
+            allVerified
+              ? "bg-white text-black hover:bg-gray-100"
+              : "bg-gray-300 text-gray-500"
+          }`}
         >
           Start Conversion
         </Button>
