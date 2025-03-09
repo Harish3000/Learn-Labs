@@ -12,7 +12,6 @@ import { Layout } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 export default function Sidebar() {
@@ -47,7 +46,7 @@ export default function Sidebar() {
           </UploadPdfDialog>
 
           <nav className="flex flex-col space-y-3">
-            <Link href="#workspace" className="text-sm font-medium">
+            <Link href={"/protected/intelli-notes/dashboard"} className="text-sm font-medium">
               <div
                 className={`flex gap-2 item-center p-3 hover:bg-slate-100 rounded-lg cursor-poniter ${path == "/dashboard" && "bg-slate-200"}`}
               >
@@ -56,7 +55,7 @@ export default function Sidebar() {
               </div>
             </Link>
 
-            <Link href="#upgrade" className="text-sm font-medium">
+            <Link href={"/protected/intelli-notes/dashboard/upgrade"} className="text-sm font-medium">
               <div
                 className={`flex gap-2 item-center p-3 hover:bg-slate-100 rounded-lg cursor-poniter ${path == "/dashboard/upgrade" && "bg-slate-200"}`}
               >
