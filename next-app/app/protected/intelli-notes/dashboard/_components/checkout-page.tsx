@@ -22,6 +22,7 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
         })
             .then((response) => response.json())
             .then((data) => {
+                console.log("Received clientSecret:", data.clientSecret);
                 setClientSecret(data.clientSecret);
             });
 
@@ -35,14 +36,42 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
         }
         const { error: submitError } = await elements.submit();
         if (submitError) {
-            setErrorMessage(submitError.message || "An unexpected error occurred.");
+            setErrorMessage(submitError.message);
             setLoading(false);
             return;
         }
+
+        const { error } = await stripe.confirmPayment({
+            elements,
+            clientSecret,
+            confirmParams: {
+                return_url: `${window.location.origin}/protected/intelli-notes/dashboard/payment-success?amount=${amount}`,
+            },
+        });
+
+        if (error) {
+            setErrorMessage(error.message);
+        } else {
+
+        }
+        setLoading(false);
     };
 
+
+    if (!clientSecret || !stripe || !elements) {
+        return <div className='flex item-center justify-center'>
+            <div className='inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white' role='status'>
+                <span className='!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace=nowrap !border-0 !p-0 ![clip:react(0,0,0,0)]'>
+                    Loading...
+                </span>
+
+            </div>
+        </div>;
+    }
+
+
     return (
-        <form onSubmit={handleSubmit} className='bg-white p-1 rounded-md px-10 '>
+        <form onSubmit={handleSubmit} className='bg-white p-1 rounded-md px-10'>
             {clientSecret && <PaymentElement />}
             {errorMessage && <div>{errorMessage}</div>}
             <button

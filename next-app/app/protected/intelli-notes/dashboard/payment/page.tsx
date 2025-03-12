@@ -12,8 +12,8 @@ if (!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) {
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
 export default function Payment() {
-    const amount = 49.99;
-    return <div className="rounded-2xl border border-indigo-600 p-6 shadow-xs sm:px-8 lg:p-12">
+    const amount = 19.99;
+    return <div className="rounded-2xl border border-indigo-600 p-4 shadow-xs sm:px-6 lg:p-10 ml-40">
         <h1 className="text-3xl text-center font-bold ">Payment</h1>
         <p className="text-lg mt-2">Total Amount: ${amount}</p>
         <Elements stripe={stripePromise}
