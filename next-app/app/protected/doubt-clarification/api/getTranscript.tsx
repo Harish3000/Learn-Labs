@@ -46,8 +46,10 @@ export default async function GetTranscript(req: any, res: any) {
   // const lecture_id = "1";
 
   // const video_id = "wTLJooaVVCw";
-  const video_id = "x7oQC_R_yVo";
-  const lecture_id = "2";
+  // const video_id = "x7oQC_R_yVo";
+
+  const video_id = "YGgvZF4Lu2I";
+  const lecture_id = "3";
 
   console.log("video_id:", video_id);
   console.log("lecture_id:", lecture_id);

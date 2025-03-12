@@ -46,7 +46,7 @@ const generateResponse = async (context: string, question: string) => {
   // Initialize the GoogleGenerativeAI client with your API key
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  // Get the specific model (e.g., "gemini-1.5-flash")
+  // Get the specific model
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   // Create the prompt for the model
@@ -61,11 +61,10 @@ const generateResponse = async (context: string, question: string) => {
   try {
     // Generate content using the model with the prompt
     const result = await model.generateContent(prompt);
-    console.log(result);
+
     const x = result.response.text();
-    console.log(x);
+
     const y = JSON.parse(x);
-    console.log(y);
 
     // Return the response content from the model
     return result.response.text();
@@ -78,11 +77,11 @@ const generateResponse = async (context: string, question: string) => {
 export default async function GetChat(question: string) {
   console.log(question);
   try {
-    // Step 1: Perform vector search for relevant context
+    // Perform vector search for relevant context
     const results = await vectorSearch(question);
     const context = results.map((chunk: any) => chunk.text).join("\n");
 
-    // Step 2: Generate AI response using direct Gemini API call
+    // Generate AI response using direct Gemini call
     const answer = await generateResponse(context, question);
 
     // Send the response back to the client
