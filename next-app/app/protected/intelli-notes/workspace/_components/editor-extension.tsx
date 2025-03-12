@@ -300,7 +300,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({
                 <AlignCenter />
               </button>
             </Tooltip>
-            <Tooltip content="Right align">
+            <Tooltip content="Right align" placement="bottom">
               <button
                 onClick={() =>
                   editor.chain().focus().setTextAlign("right").run()
@@ -312,7 +312,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({
                 <AlignRight />
               </button>
             </Tooltip>
-            <Tooltip content="Ask AI">
+            <Tooltip content="Ask AI" placement="bottom">
               {/* AI content */}
               <button
                 onClick={() => OnAiClick()}
@@ -321,7 +321,7 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({
                 <AtomIcon />
               </button>
             </Tooltip>
-            <Tooltip content="Summarize">
+            <Tooltip content="Summarize" placement="bottom">
               {/* Summarize content */}
               <button
                 onClick={() => OnSummarizeClick()}
@@ -330,12 +330,6 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({
                 <NotebookPen />
               </button>
             </Tooltip>
-            {/* <button
-              // onClick={}
-              className={"hover:text-blue-500"}
-            >
-              <Search />
-            </button> */}
           </div>
         </div>
       </div>
