@@ -5,4 +5,5 @@ export const generates = {
     `For the question: "${question}" and with the given content as the answer, please provide an appropriate response in HTML format. The answer content is: ${content}`,
   summarizeDocument: (content: string) =>
     `Please summarize the following document content in concise and clear terms: ${content}`,
+  
 };

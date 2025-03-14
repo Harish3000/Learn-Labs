@@ -9,7 +9,7 @@ const UpgradePlans: React.FC = () => {
             <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-5 lg:px-8">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-center md:gap-8">
 
-                    <div className="rounded-2xl border border-indigo-600 p-6 shadow-xs sm:px-8 lg:p-12">
+                    <div className="rounded-2xl border border-zinc-500 p-6 shadow-xs sm:px-8 lg:p-12">
                         <div className="text-center">
                             <h2 className="text-lg font-medium text-gray-900">
                                 Free
@@ -171,7 +171,7 @@ const UpgradePlans: React.FC = () => {
 
                         <a
                             href="/protected/intelli-notes/dashboard/payment"
-                            className="mt-8 block rounded-full border border-indigo-600 bg-white px-12 py-3 text-center text-sm font-medium text-indigo-600 hover:ring-1 hover:ring-indigo-600 focus:ring-3 focus:outline-hidden"
+                            className="mt-8 block rounded-full border border-indigo-600 bg-indigo-600 px-12 py-3 text-center text-sm font-medium text-white hover:ring-1 hover:ring-indigo-600 focus:ring-3 focus:outline-hidden"
                         >
                             Get Started
                         </a>

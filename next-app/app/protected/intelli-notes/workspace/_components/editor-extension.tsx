@@ -17,7 +17,8 @@ import {
   SquareCheckBigIcon,
   AtomIcon,
   NotebookPen,
-  Search
+  Search,
+  SpellCheck
 } from "lucide-react";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -26,6 +27,7 @@ import { chatSession } from "@/configs/ai-model";
 import { toast } from "sonner";
 import { Tooltip } from "@nextui-org/tooltip";
 import { generates } from "./../../../../../configs/generates";
+
 
 interface EditorExtensionProps {
   editor: any;
@@ -146,6 +148,58 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({
     }
   };
 
+  // Grammer checker
+  const handleGrammarCheck = async () => {
+    if (!editor) return;
+
+    const selectedText = editor.state.doc.textBetween(
+      editor.state.selection.from,
+      editor.state.selection.to,
+      " "
+    );
+
+    if (!selectedText.trim()) {
+      toast.error("Please select text to check grammar.");
+      return;
+    }
+
+    toast.info("Checking grammar...");
+
+    try {
+      const prompt = `Correct the grammar of the following sentence:${selectedText}\nFixed Grammar:`;
+
+      const AiModelResult = await chatSession.sendMessage(prompt);
+      const responseText = await AiModelResult.response.text();
+      const correctedText = responseText.trim();
+
+      if (correctedText.toLowerCase() === selectedText.toLowerCase()) {
+        toast.success("The sentence is already correct!");
+        return;
+      }
+
+      const existingText = editor.getHTML();
+      const formattedCorrection = `
+  <p><strong>Grammar Suggestions:</strong></p>
+  <p><strong>Original:</strong> ${selectedText}</p>
+  <p><strong>Corrected:</strong> ${correctedText}</p>
+`;
+
+
+      editor.commands.setContent(existingText + formattedCorrection);
+      toast.success("Grammar check complete! Corrections suggested.");
+
+      // Save updated notes
+      await saveNotes({
+        notes: editor.getHTML(),
+        fileId: fileId,
+        createdBy: "Admin"
+      });
+
+    } catch (error) {
+      console.error("Grammar check failed:", error);
+      toast.error("Failed to check grammar. Please try again.");
+    }
+  };
 
   return (
     editor && (
@@ -329,6 +383,13 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({
                 <NotebookPen />
               </button>
             </Tooltip>
+            <Tooltip content="Check Grammar" placement='bottom'>
+              <button onClick={handleGrammarCheck} className="text-blue-500">
+                <SpellCheck />
+              </button>
+            </Tooltip>
+
+
           </div>
         </div>
       </div>
