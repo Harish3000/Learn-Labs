@@ -29,7 +29,7 @@ const ChatBotComponent: FC = () => {
     setLoading(true);
 
     try {
-      const data = await GetChat(userMessage);
+      const data = await GetChat(userMessage, "");
 
       setChat((prev) => {
         const updatedChat = [...prev];

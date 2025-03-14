@@ -7,6 +7,56 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+const validateQuestion = (question: string): boolean => {
+  const forbiddenPatterns = [
+    /jailbreak/i,
+    /bypass/i,
+    /override/i,
+    /ignore/i,
+    /exploit/i,
+    /ethical hacking/i,
+    /cheat code/i,
+    /system prompt/i,
+    /developer mode/i,
+    /debug mode/i,
+    /confidential/i,
+    /private/i,
+    /hack/i,
+    /crack/i,
+    /unlock/i,
+  ];
+
+  return !forbiddenPatterns.some((pattern) => pattern.test(question));
+};
+
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const MAX_REQUESTS = 5; // Maximum requests per window
+const rateLimit = new Map<string, { count: number; lastRequest: number }>();
+
+const checkRateLimit = (ip: string): boolean => {
+  const currentTime = Date.now();
+  const entry = rateLimit.get(ip);
+
+  if (!entry) {
+    rateLimit.set(ip, { count: 1, lastRequest: currentTime });
+    return true;
+  }
+
+  if (currentTime - entry.lastRequest > RATE_LIMIT_WINDOW) {
+    rateLimit.set(ip, { count: 1, lastRequest: currentTime });
+    return true;
+  }
+
+  if (entry.count >= MAX_REQUESTS) {
+    return false;
+  }
+
+  entry.count += 1;
+  entry.lastRequest = currentTime;
+  rateLimit.set(ip, entry);
+  return true;
+};
+
 console.log("Test get chat:", supabase);
 
 // LangChain setup for embeddings
@@ -47,7 +97,9 @@ const generateResponse = async (context: string, question: string) => {
   const genAI = new GoogleGenerativeAI(apiKey);
 
   // Get the specific model
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+  });
 
   // Create the prompt for the model
   const prompt = `
@@ -74,8 +126,17 @@ const generateResponse = async (context: string, question: string) => {
   }
 };
 
-export default async function GetChat(question: string) {
+export default async function GetChat(question: string, ip: string) {
   console.log(question);
+
+  if (!validateQuestion(question)) {
+    return "Your question contains restricted terms. Please rephrase.";
+  }
+
+  if (!checkRateLimit(ip)) {
+    return "Rate limit exceeded. Please try again later.";
+  }
+
   try {
     // Perform vector search for relevant context
     const results = await vectorSearch(question);
