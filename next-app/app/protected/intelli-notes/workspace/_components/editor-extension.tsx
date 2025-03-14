@@ -95,7 +95,6 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({
   };
 
   // selected text summarize
-
   const OnSummarizeClick = async () => {
     const selectedText = editor.state.doc.textBetween(
       editor.state.selection.from,
