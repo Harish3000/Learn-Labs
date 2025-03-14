@@ -36,6 +36,26 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// Utility function to clean bot response
+const cleanBotResponse = (botResponse: string) => {
+  try {
+    // Try to parse the bot response if it's in JSON format
+    const parsedResponse = JSON.parse(botResponse);
+
+    // Extract the "res" and "timestamp" values if available
+    if (parsedResponse && parsedResponse.res && parsedResponse.timestamp) {
+      return `${parsedResponse.res} (Given Timestamp: ${parsedResponse.timestamp})`;
+    }
+
+    // If the response is not in the expected format, return it as-is
+    return botResponse;
+  } catch (error) {
+    // If parsing fails, return the original bot response
+    return botResponse;
+  }
+};
+
+// FeedbackChart component (Bar Chart)
 const FeedbackChart = ({ feedbackData }: { feedbackData: any[] }) => {
   const thumbsUpCount = feedbackData.filter((item) => item.thumbs_up).length;
   const thumbsDownCount = feedbackData.length - thumbsUpCount;
@@ -92,7 +112,7 @@ const FeedbackChart = ({ feedbackData }: { feedbackData: any[] }) => {
   );
 };
 
-// LineChart component (Line Chart)
+// LineFeedbackChart component (Line Chart)
 const LineFeedbackChart = ({ feedbackData }: { feedbackData: any[] }) => {
   const chartData = {
     labels: feedbackData.map((feedback) =>
@@ -219,7 +239,8 @@ const FeedbackTable = ({ feedbackData }: { feedbackData: any[] }) => {
                 {feedback.user_message}
               </td>
               <td className="py-4 px-6 border-b text-sm text-gray-800 font-medium">
-                {feedback.bot_response}
+                {/* Clean bot response before rendering */}
+                {cleanBotResponse(feedback.bot_response)}
               </td>
               <td className="py-4 px-6 border-b text-sm text-gray-800 font-medium">
                 {feedback.thumbs_up ? (
