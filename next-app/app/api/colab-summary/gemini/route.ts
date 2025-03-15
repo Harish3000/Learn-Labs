@@ -7,11 +7,11 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
-  console.log("Fetching student submitted summaries...")
+  console.log("Fetching student submitted summaries...");
   try {
     const { data, error } = await supabase
-      .from("summaries") // Table name
-      .select("*"); // Fetch all columns
+      .from("summaries")
+      .select("*");
 
     if (error) {
       console.error("Error fetching summaries:", error);
@@ -29,42 +29,28 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  console.log("Submitting Summaries to database...");
-  console.log("Integrating API...");
   try {
-    const body = await req.json(); // Parse the incoming JSON
+    const body = await req.json();
 
     console.log("Data Sending : ",body);
 
-    const { uid, email, firstname, gemini_summary, accuracy } = body;
-
-    // Validation checks for required fields
-    if (!uid || !email || !firstname || !gemini_summary || accuracy === undefined) {
-      return NextResponse.json({ error: "All fields are required." }, { status: 400 });
-    }
-
-    console.log("Loading...");
-
+    const { breakroom_id, summary, responseData, correctness, missed } = body;
+    console.log("breakroom_id : ",breakroom_id);
     // Insert the data into the Supabase table
-    const { data, error } = await supabase
+      const { data, error } = await supabase
       .from("summaries") // Replace with your actual table name
       .insert([{
-        uid: uid,
-        email,
-        firstname,
-        gemini_summary,
-        accuracy,
+        breakroom_details: breakroom_id,
+        student_input: summary,
+        model_summary: responseData,
+        correctness: correctness,
+        missed_points: missed,
       }]);
 
-    // Error handling for failed insertion
-    if (error) {
-      console.error("Error inserting data:", error);
-      return NextResponse.json({ error: "Failed to store summary." }, { status: 500 });
-    }
-
-    console.log("Summaries stored successfully...");
-    console.log("API Integrated success!!");
-    // Return a success response
+      if (error) {
+        console.error("Error inserting data:", error);
+        return NextResponse.json({ error: "Failed to store summary." }, { status: 500 });
+      }
     return NextResponse.json({ message: "Summary stored successfully." });
 
   } catch (error) {

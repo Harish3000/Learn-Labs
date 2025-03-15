@@ -3,33 +3,59 @@ import { createClient } from '@/utils/supabase/server';
 
 // **CREATE**
 export async function POST(req: Request) {
-
-  console.log("Creating meeting...");
   try {
     const supabase = await createClient();
-    const body = await req.json(); // Parse the JSON body
-    const { url, name } = body;
-
+    const body = await req.json();
+    const { url, name, roomID, userID } = body;
     if (!url || !name) {
-      return NextResponse.json({ error: 'URL and name required' }, { status: 400 });
+      return NextResponse.json({ error: 'URL and name are required' }, { status: 400 });
     }
 
-    console.log("Fetching current session users...");
-
     const { data, error } = await supabase
-      .from('current_session_users')
-      .insert([{ meeting_url : url, time_period : 10, name : name }]);
-
-    console.log("Meeting URL created...");
+      .from('breakroom_details')
+      .insert([{ meeting_url : url, time_period : 10, student_name : name, room_id : roomID, student_id : userID }]);
+    
     if (error) {
       console.error('Supabase Error:', error.message);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    console.log("On going meeting...");
     return NextResponse.json({ success: true, data }, { status: 201 });
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}
+
+export async function GET(req: Request) {
+  try {
+    // Get query parameters from the URL
+    const url = new URL(req.url);
+    const breakroomID = url.searchParams.get("breakroomID");
+    const userID = url.searchParams.get("userID");
+
+    if (!breakroomID || !userID) {
+      return NextResponse.json({ error: "Missing required parameters." }, { status: 400 });
+    }
+
+    const supabase = await createClient();
+
+    // Fetch breakroom attendance based on breakroomID and userID
+    const { data, error } = await supabase
+      .from("breakroom_attendance")
+      .select("*")
+      .eq("breakroom_id", breakroomID)
+      .eq("student_id", userID);
+
+    if (error) {
+      console.error("Error fetching breakroom attendance data:", error);
+      return NextResponse.json({ error: "Failed to fetch summaries." }, { status: 500 });
+    }
+
+    // Return the fetched data
+    return NextResponse.json(data, { status: 200 });
+  } catch (error) {
+    console.error("API Error:", error);
+    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }
 }

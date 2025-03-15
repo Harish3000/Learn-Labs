@@ -6,49 +6,76 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuid } from "uuid";
 import Swal from "sweetalert2";
+import RecordMeeting from "../[roomid]/comp/RecordMeeting";
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
 
 const Room = ({ params }: { params: { roomid: string } }) => {
   const { fullName } = useUser();
   const roomID = params.roomid;
   const meetingContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-
-  // State to handle whether the meeting has ended or not
   const [meetingEnded, setMeetingEnded] = useState(false);
+  const [userID, setUserID] = useState('');
+
+  useEffect(() => {
+    try {
+      // Retrieve token from cookies
+      let token = Cookies.get("sb-mmvkkgidcuocgkvxjljd-auth-token");
+      if (token) {
+
+        if (token.startsWith("base64-")) {
+          token = token.replace("base64-", "");
+        }
+
+        const decodedToken = jwtDecode(atob(token));
+
+        const userId = decodedToken?.sub?? "";
+
+        setUserID(userId);
+      } else {
+        console.warn("Token not found in local storage");
+      }
+    } catch (error) {
+      console.error("Error decoding token", error);
+    }
+  }, []);
 
   // Function to store the URL in the database
-  const storeUrlInDatabase = async (url: string, name: string) => {
+  const storeUrlInDatabase = async (url: string, name: string, roomID: string, userID: string) => {
     try {
-      const response = await fetch('/api/colab-summary/session', {
-        method: 'POST',
+      const response = await fetch("/api/colab-summary/session", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url, name }),
+        body: JSON.stringify({ url, name, roomID, userID }),
       });
 
       if (!response.ok) {
-        console.error('Failed to store URL in database');
+        console.error("Failed to store URL in database");
       }
     } catch (error) {
-      console.error('Error storing URL:', error);
+      console.error("Error storing URL:", error);
     }
   };
 
   useEffect(() => {
-    // generate Kit Token
+    if (!userID) return;
+
+    // Generate Kit Token
     const appID = parseInt(process.env.NEXT_PUBLIC_ZEGO_APP_ID!);
     const serverSecret = process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET!;
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
       serverSecret,
       roomID,
-      uuid(), // Logged in user id
+      userID,
       fullName || "user" + Date.now(),
       720
     );
 
-    // Create instance object from Kit Token.
+    // Create instance object from Kit Token
     const zp = ZegoUIKitPrebuilt.create(kitToken);
 
     // Generate the shareable link
@@ -60,45 +87,42 @@ const Room = ({ params }: { params: { roomid: string } }) => {
       "?roomID=" +
       roomID;
 
-    storeUrlInDatabase(shareableLink, fullName);
+    storeUrlInDatabase(shareableLink, fullName, roomID, userID);
 
     // Timer to end the meeting after 10 minutes
     const endMeetingTimer = setTimeout(() => {
-      zp.destroy(); // Leave the room after 10 minutes
-      setMeetingEnded(true); // Set meeting ended state
+      setMeetingEnded(true);
       Swal.fire({
         title: "Meeting Ended",
         text: "The meeting has ended. Thank you for joining!",
         icon: "info",
         confirmButtonText: "OK",
       }).then(() => {
-        router.push("/protected/colab-summary/gemini"); // Navigate to the end page
+        router.push("/protected/colab-summary/gemini");
       });
-    }, 1 * 60 * 1000); // 10 minutes in milliseconds
+    }, 0.5 * 60 * 1000); // 10 minutes in milliseconds   
 
-    // Clean up the timer when the component unmounts
     return () => {
       clearTimeout(endMeetingTimer);
       zp.destroy();
     };
-
-  }, [roomID, fullName, router]); // Dependency array for useEffect
+  }, [roomID, userID]); // Ensure it runs only when dependencies change
 
   useEffect(() => {
-    if (meetingContainerRef.current && !meetingEnded) {
-      // start the call only if the meeting has not ended
+    if (meetingContainerRef.current && !meetingEnded && userID) {
+      // Start the call only if the meeting has not ended
       const appID = parseInt(process.env.NEXT_PUBLIC_ZEGO_APP_ID!);
       const serverSecret = process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET!;
       const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
         appID,
         serverSecret,
         roomID,
-        uuid(), // Logged in user id
+        userID, // Logged-in user ID
         fullName || "user" + Date.now(),
         720
       );
 
-      // Create instance object from Kit Token.
+      // Create instance object from Kit Token
       const zp = ZegoUIKitPrebuilt.create(kitToken);
 
       zp.joinRoom({
@@ -115,9 +139,14 @@ const Room = ({ params }: { params: { roomid: string } }) => {
         maxUsers: 4,
       });
     }
-  }, [roomID, fullName, meetingEnded]); // Ensure it runs only if meeting hasn't ended
+  }, [roomID, fullName, meetingEnded, userID]); // Ensure userID is available before running
 
-  return <div className="w-full h-screen" ref={meetingContainerRef}></div>;
+  return (
+    <div>
+      <div className="w-full h-screen" ref={meetingContainerRef}></div>
+      <RecordMeeting meetingData={{roomID, userID}} meetingEnded={meetingEnded} />
+    </div>
+  );
 };
 
 export default Room;

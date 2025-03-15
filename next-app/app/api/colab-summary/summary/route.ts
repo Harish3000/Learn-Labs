@@ -8,13 +8,13 @@ export async function POST(req: Request) {
     const body = await req.json(); // Parse the JSON body
     
     const {
-      userId, email, firstname, fact_checking, gemini_summary, accuracy
+      breakroomID, summary, responseData, correctness, missed
     } = body;
 
     // Check for required fields
-    if (!userId || !email || !firstname || !fact_checking || !gemini_summary || accuracy === undefined) {
+    if (!breakroomID || !summary === undefined) {
       return NextResponse.json(
-        { error: 'All fields are required' },
+        { error: 'BreakroomID and summary are required' },
         { status: 400 }
       );
     }
@@ -23,12 +23,11 @@ export async function POST(req: Request) {
     const { data, error } = await supabase
       .from('summaries')
       .insert([{
-        uid: userId, 
-        email, 
-        firstname, 
-        fact_checking_text: fact_checking,
-        gemini_summary_text: gemini_summary,
-        accuracy_percentage: accuracy
+        breakroom_details: breakroomID, 
+        student_input: summary, 
+        model_summary: responseData,
+        correctness: correctness,
+        missed_points: missed
       }]);
 
     if (error) {

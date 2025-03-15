@@ -9,25 +9,99 @@ import {
 } from "@google/generative-ai";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
 
-const MODEL_NAME = "gemini-1.0-pro";
-const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY!;
+const MODEL_NAME = process.env.NEXT_PUBLIC_COLLAB_SUMMARY_MODEL_NAME!;
+const API_KEY = process.env.NEXT_PUBLIC_COLLAB_SUMMARY_GEMINI_API_KEY!;
 
 export default function Home() {
   const [summary, setSummary] = useState<string>("");
   const [responseData, setResponseData] = useState<string>("");
+  const [correctness, setCorrectness] = useState<string>("");
+  const [missed, setMissed] = useState<string>("");
+  const [breakroom_id, setBreakroomID] = useState<number>(-1);
+  const [breakroomData, setBreakroomData] = useState<any[]>([]);
+  const [isFetched, setIsFetched] = useState(false);
   const router = useRouter();
+  const [userID, setUserID] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let token = Cookies.get("sb-mmvkkgidcuocgkvxjljd-auth-token");
+        if (token) {
+          if (token.startsWith("base64-")) {
+            token = token.replace("base64-", "");
+          }
+          const decodedToken = jwtDecode(atob(token));
+          const userId = decodedToken?.sub ?? "";
+          setUserID(userId);
+        } else {
+          console.warn("Token not found in cookies");
+        }
+  
+        // Debug: Check if local storage has data
+        const storedData = localStorage.getItem("breakroomData");
+        console.log("Local Storage Breakroom Data: ", storedData);
+  
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          setBreakroomData(parsedData); // Store in state
+  
+          for (const room of breakroomData) {
+            if (room.student_id === userID) {
+              setBreakroomID(room.breakroom_id);
+              break;
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error decoding token", error);
+      }
+    };
+  
+    fetchData();
+  }, [userID]);  // Ensures effect runs only when `userID` is valid
+
+  useEffect(() => {
+    if (breakroom_id != -1 && userID != '' && !isFetched) {
+      const fetchBreakroomDetails = async () => {
+        try {
+          const response = await fetch(`/api/colab-summary/session?breakroomID=${breakroom_id}&userID=${userID}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch breakroom details.");
+          }
+
+          const data = await response.json();
+          setBreakroomID(data.id);
+          setIsFetched(true);
+        } catch (error) {
+          console.error("Error fetching breakroom details:", error);
+          toast.error("Error fetching breakroom details.");
+        }
+      };
+
+      fetchBreakroomDetails();
+    }
+  }, [breakroom_id, userID]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSummary(event.target.value);
   };
 
   const storeSummaryInDatabase = async (
-    uid: string,
-    email: string,
-    firstname: string,
-    gemini_summary: string,
-    accuracy: number
+    breakroomID: number,
+    summary: string,
+    responseData: string,
+    correctness: string,
+    missed: string,
   ) => {
     try {
       const response = await fetch("/api/colab-summary/gemini", {
@@ -36,11 +110,11 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          uid,
-          email,
-          firstname,
-          gemini_summary,
-          accuracy,
+          breakroomID,
+          summary,
+          responseData,
+          correctness,
+          missed,
         }),
       });
 
@@ -49,11 +123,18 @@ export default function Home() {
         toast.error("Failed to submit summary");
       } else {
         toast.success("Summary submitted successfully!");
-        setSummary(""); // Clear the input after submission
       }
     } catch (error) {
       console.error("Error storing summary:", error);
-      alert("Error submitting summary");
+      toast.error("Error submitting summary");
+    }
+  };
+
+  const handleSubmit = async () => {
+    await runChat(summary);
+    if (breakroom_id != -1) {
+      await storeSummaryInDatabase(breakroom_id, summary, responseData, correctness, missed);
+      // router.push(`/protected/colab-summary/dashboard`);
     }
   };
 
@@ -63,92 +144,34 @@ export default function Home() {
       const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
       const generationConfig = {
-        temperature: 0.9,
+        temperature: 1,
         topK: 1,
         topP: 1,
         maxOutputTokens: 2048,
       };
 
-      const safetySettings = [
-        {
-          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-          threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-        },
-      ];
-
-      const formattedPrompt = `Summarize the following text and provide the accuracy percentage as a number from 0 to 100. Output the summary and accuracy in the following format(Always follow the same format when responsing back): Summary: [Summary] and Accuracy: [Accuracy]%: text : ${prompt}`;
-
       const chat = model.startChat({
         generationConfig,
-        safetySettings,
         history: [
           {
             role: "user",
-            parts: [{ text: formattedPrompt }],
+            parts: [{ text: prompt }],
           },
         ],
       });
 
-      const result = await chat.sendMessage(formattedPrompt);
+      const result = await chat.sendMessage(prompt);
       const response = result.response;
-      setResponseData(response.text());
 
-      console.log('Response Data : ',responseData);
+      setResponseData(response.text());
     } catch (error) {
       console.error("Error running chat:", error);
-      alert("Error generating summary");
+      toast.error("Error generating summary");
     }
-  };
-
-  const extractSummary = (response: string) => {
-    const summaryMatch = response.match(/Summary:\s*(.*?)(?=\n|$)/);
-    return summaryMatch ? summaryMatch[1].trim() : "Summary not available";
-  };
-
-  const extractAccuracy = (response: string) => {
-    const accuracyMatch = response.match(/Accuracy:\s*(\d+(\.\d+)?)%/);
-    return accuracyMatch ? parseFloat(accuracyMatch[1]) : 0;
-  };
-
-  const handleSubmit = async () => {
-    const user = localStorage.getItem("user");
-    if (!user) {
-      toast.error("User not found. Please log in.");
-      return;
-    }
-
-    const parsedUser = JSON.parse(user);
-    const { _id, email, firstname } = parsedUser.user;
-
-    await runChat(summary);
-
-    const geminiSummary = extractSummary(responseData);
-    const accuracy = extractAccuracy(responseData);
-
-    if (geminiSummary === "Summary not available" || accuracy === 0) {
-      toast.error("Failed to generate a valid summary or accuracy.");
-      return;
-    }
-
-    await storeSummaryInDatabase(_id, email, firstname, geminiSummary, accuracy);
-
-    router.push(`/protected/colab-summary/dashboard`);
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8 bg-gray-50 w-full">
+    <main>
       <div className="w-full max-w-7xl mx-auto">
         <h1 className="text-3xl font-semibold text-gray-800 mb-4">Submit your summary here</h1>
 
