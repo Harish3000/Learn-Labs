@@ -86,7 +86,7 @@ export async function processTranscript(transcript: any[]) {
     2.In the transcript offset+duration=end_time
     3.each chapter must be minimum 120 seconds long in total duration and maximum 900 seconds long total duration based on timestamp duration values in transcript
     4..Each transcript must have minimum 2 chapters and maximum 8 chapters
-    5. For text attribute in output expected output format below = do not over summarize. this should contain all key points, steps and important terms discussed in the video. DO NOT LEAVE OUT ANY IMPORTANT POINTS 
+    5. For text attribute in the output expected output format below give it following way = 000005ms: [Sentence spoken] | 000012ms: [Sentence spoken] | 000020ms: [Sentence spoken] |  
   ):
 
 ${transcriptString}
@@ -96,7 +96,7 @@ Please provide the output in the following format:
   {
     "start_time": 0,
     "end_time": 120,
-    "text": "Chapter 1 content",
+    "text": "Chapter 1 content as timestamped sentences = 000005ms: [Sentence spoken] | 000012ms: [Sentence spoken] | 000020ms: [Sentence spoken] |  ",
     "sequence": 1
   },
   ...
