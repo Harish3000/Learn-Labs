@@ -20,6 +20,9 @@ export async function POST(req: Request) {
     } else if (video.source === "google_drive") {
       const transcriptionResult = await transcribeVideo(video.url);
       transcript = await getTranscriptWithTimestamps(transcriptionResult.id);
+    } else if (video.source === "cloudinary") {
+      const transcriptionResult = await transcribeVideo(video.url);
+      transcript = await getTranscriptWithTimestamps(transcriptionResult.id);
     } else {
       throw new Error(`Unsupported video source: ${video.source}`);
     }
@@ -42,6 +45,19 @@ export async function POST(req: Request) {
       throw new Error(`Error updating video duration: ${updateError.message}`);
     }
 
+    //fetch lecture id to add to transcript chunk table
+    const { data: videoData, error: videoError } = await supabase
+      .from("videos")
+      .select("lecture_id")
+      .eq("video_id", video.id)
+      .single();
+
+    if (videoError) {
+      throw new Error(`Error fetching lecture_id: ${videoError.message}`);
+    }
+
+    const lectureId = videoData.lecture_id;
+
     // Insert transcript chunks and generate questions
     for (const chapter of chapters) {
       // Extract vector from the "values" key
@@ -51,6 +67,7 @@ export async function POST(req: Request) {
         .from("transcript_chunks")
         .insert({
           video_id: video.id,
+          lecture_id: lectureId,
           start_time: chapter.start_time,
           end_time: chapter.end_time,
           text: chapter.text,

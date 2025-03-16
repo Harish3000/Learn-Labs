@@ -11,8 +11,8 @@ export const createCourseSchema = z.object({
         .string()
         .url("A valid URL is required")
         .regex(
-          /^https:\/\/(www\.)?(youtube\.com|youtu\.be|drive\.google\.com)\/.+$/,
-          "Link must be a valid YouTube or Google Drive URL"
+          /^https:\/\/(www\.)?(youtube\.com|youtu\.be|drive\.google\.com|res\.cloudinary\.com)\/.+$/,
+          "Link must be a valid YouTube, Google Drive, or Cloudinary URL"
         )
     )
     .min(1, "At least one link is required"),

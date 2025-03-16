@@ -5,10 +5,10 @@ import { createClient } from "@/utils/supabase/server";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    console.log("Received request body:", body);
     const { title, links } = createCourseSchema.parse(body);
     const supabase = await createClient();
 
-    // Insert lecture data into Supabase
     const { data: lectureData, error: lectureError } = await supabase
       .from("lectures")
       .insert({
@@ -17,40 +17,35 @@ export async function POST(req: Request) {
         playlist_id: "N/A",
         upload_date: new Date().toISOString(),
         is_active: true,
-        joined_students: "N/A",
+        joined_students: "[]",
       })
       .select();
 
     if (lectureError) {
+      console.error("Lecture insertion error:", lectureError);
       throw new Error(`Error inserting lecture: ${lectureError.message}`);
     }
 
     const lectureId = lectureData[0].lecture_id;
+    console.log("Lecture inserted with ID:", lectureId);
 
-    // Insert video data into Supabase
     for (let i = 0; i < links.length; i++) {
       const videoUrl = links[i];
-      let videoId, source;
+      let videoId: string | null = null;
+      let source: string;
 
-      if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be")) {
-        const match = videoUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+      if (videoUrl.includes("cloudinary.com")) {
+        const match = videoUrl.match(/\/upload\/v\d+\/(.+)\.mp4/);
         videoId = match ? match[1] : null;
-        source = "youtube";
-      } else if (videoUrl.includes("drive.google.com")) {
-        const match = videoUrl.match(/\/d\/(.*)\/view/);
-        videoId = match ? match[1] : null;
-        source = "google_drive";
-      } else if (videoUrl.includes("res.cloudinary.com")) {
-        videoId = videoUrl.split("/").pop()?.split(".")[0];
         source = "cloudinary";
       } else {
-        console.error(`Invalid URL: ${videoUrl}`);
-        throw new Error(`Invalid URL: ${videoUrl}`);
+        console.error(`Invalid Cloudinary URL: ${videoUrl}`);
+        throw new Error(`Invalid Cloudinary URL: ${videoUrl}`);
       }
 
       if (!videoId) {
-        console.error("video_id cannot be null or empty");
-        throw new Error("video_id cannot be null or empty");
+        console.error("Video ID cannot be null or empty");
+        throw new Error("Video ID cannot be null or empty");
       }
 
       const { data: existingVideo } = await supabase
@@ -67,19 +62,21 @@ export async function POST(req: Request) {
       const { error: videoError } = await supabase.from("videos").insert({
         lecture_id: lectureId,
         video_id: videoId,
-        video_title: `Video ${i + 1}`,
+        video_title: "Video 1",
         video_url: videoUrl,
-        duration_seconds: 0,
+        duration_seconds: "0",
         start_timestamp: new Date().toISOString(),
         end_timestamp: new Date().toISOString(),
-        video_sequence: i + 1,
-        active_students: "N/A",
+        video_sequence: "1",
+        active_students: "[]",
         source: source,
       });
 
       if (videoError) {
+        console.error("Video insertion error:", videoError);
         throw new Error(`Error inserting video: ${videoError.message}`);
       }
+      console.log(`Video inserted: ${videoId}`);
     }
 
     return NextResponse.json({
@@ -87,7 +84,7 @@ export async function POST(req: Request) {
       lectureId,
     });
   } catch (error) {
-    console.error("Error creating course:", error);
+    console.error("Error in save-to-cloud:", error);
     return NextResponse.json(
       { error: "Failed to create course" },
       { status: 500 }
