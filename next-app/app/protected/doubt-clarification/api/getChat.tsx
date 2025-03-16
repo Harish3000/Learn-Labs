@@ -77,7 +77,7 @@ const vectorSearch = async (query: string) => {
   // Perform Supabase  RPC call for vector search
   const { data, error } = await supabase.rpc("match_chunks", {
     query_embedding: queryEmbedding,
-    similarity_threshold: 0.6,
+    similarity_threshold: 0.4,
     match_count: 3,
   });
 

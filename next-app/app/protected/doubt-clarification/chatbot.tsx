@@ -1,10 +1,8 @@
-// export default ChatBotComponent;
 import { createClient } from "@supabase/supabase-js";
 import { FC, useState } from "react";
 import { FaFlag, FaRobot, FaThumbsUp, FaUser } from "react-icons/fa";
 import GetChat from "./api/getChat";
 
-// Initialize Supabase client using environment variables
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -33,7 +31,7 @@ const ChatBotComponent: FC = () => {
 
       setChat((prev) => {
         const updatedChat = [...prev];
-        updatedChat[updatedChat.length - 1].bot = data; // Bot's response
+        updatedChat[updatedChat.length - 1].bot = data;
         return updatedChat;
       });
     } catch (error) {
@@ -64,7 +62,6 @@ const ChatBotComponent: FC = () => {
       ]);
       if (error) throw error;
 
-      // Update the chat state to reflect that feedback has been given
       setChat((prev) => {
         const updatedChat = [...prev];
         updatedChat[index] = {
@@ -83,6 +80,7 @@ const ChatBotComponent: FC = () => {
 
   const formatBotResponse = (response: string) => {
     try {
+      // Try parsing the response as JSON first
       const parsedResponse = JSON.parse(response);
 
       const resContent = parsedResponse.res ?? "No response provided";
@@ -118,7 +116,6 @@ const ChatBotComponent: FC = () => {
                     </span>
                   ))
                 ) : (
-                  // In case timestamp is neither string nor array
                   <span className="text-yellow-500 ml-1 p-1 rounded">
                     {String(timestampContent)}
                   </span>
@@ -133,19 +130,25 @@ const ChatBotComponent: FC = () => {
         </div>
       );
     } catch (error) {
+      // If parsing fails, assume it's a non-JSON response and display it raw
       console.error("Error parsing response:", error);
-      return <p className="text-red-500">Failed to parse bot response</p>;
+
+      return (
+        <div className="text-gray-300">
+          <p className="text-white">
+            {response || "Failed to parse bot response"}
+          </p>
+        </div>
+      );
     }
   };
 
   return (
     <div className="fixed right-4 bottom-16 w-80 h-[85vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col overflow-hidden">
-      {/* Header */}
       <div className="bg-gray-900 text-white text-lg font-semibold p-4 rounded-t-lg">
         Live Doubt Clarification
       </div>
 
-      {/* Chat Messages */}
       <div className="flex-1 p-4 overflow-y-auto space-y-4 text-white">
         {chat.map((item, index) => (
           <div key={index} className="space-y-1">
@@ -197,7 +200,6 @@ const ChatBotComponent: FC = () => {
         )}
       </div>
 
-      {/* Input Box */}
       <div className="flex p-4 border-t border-gray-700">
         <input
           type="text"

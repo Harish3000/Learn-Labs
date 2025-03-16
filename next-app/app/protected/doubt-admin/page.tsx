@@ -447,6 +447,27 @@ const Dashboard = () => {
           <FeedbackChart feedbackData={filteredFeedback} />
         </div>
 
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-3">
+            Trending Words
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {wordFrequencies.slice(0, 10).map((word, index) => (
+              <div
+                key={index}
+                className="bg-white p-3 rounded-md shadow-md hover:shadow-lg transition duration-200 ease-in-out"
+              >
+                <h3 className="text-sm font-medium text-gray-700">
+                  {word.word}
+                </h3>
+                <p className="text-xl font-bold text-gray-900">
+                  {word.frequency}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="mt-12">
           <LineFeedbackChart feedbackData={filteredFeedback} />
         </div>
@@ -469,27 +490,6 @@ const Dashboard = () => {
 
         <div className="mt-12">
           <FeedbackTable feedbackData={filteredFeedback} />
-        </div>
-
-        <div className="mt-12">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Trending Words
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {wordFrequencies.slice(0, 10).map((word, index) => (
-              <div
-                key={index}
-                className="bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition duration-300 ease-in-out"
-              >
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {word.word}
-                </h3>
-                <p className="text-3xl font-bold text-gray-900">
-                  {word.frequency}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </div>
