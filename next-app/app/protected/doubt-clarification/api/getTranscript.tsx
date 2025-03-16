@@ -41,13 +41,6 @@ const generateEmbedding = async (text: string) => {
 
 // Main API route handler
 export default async function GetTranscript(req: any, res: any) {
-  // Extract lecture and video metadata from the request, e.g., video_id and lecture_id
-  // const video_id = "j1eO9UOi-sc";
-  // const lecture_id = "1";
-
-  // const video_id = "wTLJooaVVCw";
-  // const video_id = "x7oQC_R_yVo";
-
   const video_id = "YGgvZF4Lu2I";
   const lecture_id = "3";
 

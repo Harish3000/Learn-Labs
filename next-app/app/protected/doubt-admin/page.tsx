@@ -51,7 +51,7 @@ const cleanBotResponse = (botResponse: string) => {
   }
 };
 
-// FeedbackChart component (Bar Chart)
+// FeedbackChart Bar Chart
 const FeedbackChart = ({ feedbackData }: { feedbackData: any[] }) => {
   const thumbsUpCount = feedbackData.filter((item) => item.thumbs_up).length;
   const thumbsDownCount = feedbackData.length - thumbsUpCount;
@@ -108,7 +108,7 @@ const FeedbackChart = ({ feedbackData }: { feedbackData: any[] }) => {
   );
 };
 
-// LineFeedbackChart component (Line Chart)
+// LineFeedbackChart Line Chart
 const LineFeedbackChart = ({ feedbackData }: { feedbackData: any[] }) => {
   const chartData = {
     labels: feedbackData.map((feedback) =>
@@ -186,19 +186,12 @@ const StatisticCard = ({
 
 // FeedbackTable component with pagination
 const FeedbackTable = ({ feedbackData }: { feedbackData: any[] }) => {
-  const [currentPage, setCurrentPage] = useState(1); // Track current page
-  const rowsPerPage = 5; // Set number of rows per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 5;
 
-  // Calculate the index of the last row on the current page
   const indexOfLastRow = currentPage * rowsPerPage;
-
-  // Calculate the index of the first row on the current page
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-
-  // Get the current rows based on the current page
   const currentRows = feedbackData.slice(indexOfFirstRow, indexOfLastRow);
-
-  // Calculate total pages
   const totalPages = Math.ceil(feedbackData.length / rowsPerPage);
 
   // Handle page change
@@ -361,8 +354,8 @@ const DoubtQueryTrend = ({ feedbackData }: { feedbackData: any[] }) => {
 const Dashboard = () => {
   const [feedbackData, setFeedbackData] = useState<any[]>([]);
   const [filteredFeedback, setFilteredFeedback] = useState<any[]>([]);
-  const [wordFrequencies, setWordFrequencies] = useState<any[]>([]); // S// State for filtered feedback
-  const [selectedDate, setSelectedDate] = useState<string>(""); // State for selected date filter
+  const [wordFrequencies, setWordFrequencies] = useState<any[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   useEffect(() => {
     const fetchFeedbackData = async () => {
@@ -380,12 +373,12 @@ const Dashboard = () => {
     };
 
     const fetchWordFrequencies = async () => {
-      const { data, error } = await supabase.rpc("get_word_frequencies"); // Call the SQL function
+      const { data, error } = await supabase.rpc("get_word_frequencies");
 
       if (error) {
         console.error("Error fetching word frequencies:", error);
       } else {
-        setWordFrequencies(data); // Set the result to state
+        setWordFrequencies(data);
       }
     };
 
@@ -405,7 +398,7 @@ const Dashboard = () => {
       );
       setFilteredFeedback(filtered);
     } else {
-      setFilteredFeedback(feedbackData); // Reset filter to show all feedback
+      setFilteredFeedback(feedbackData);
     }
   };
 
@@ -479,7 +472,7 @@ const Dashboard = () => {
             onChange={handleDateFilterChange}
             className="p-3 border border-gray-300 rounded-lg"
           >
-            <option value="">-- Select a Lecture Date --</option>
+            <option value=""> Lecture Date </option>
             {uniqueDates.map((date) => (
               <option key={date} value={date}>
                 {date}
