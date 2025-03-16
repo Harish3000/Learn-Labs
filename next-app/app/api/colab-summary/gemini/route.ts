@@ -31,14 +31,12 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
-    console.log("Data Sending : ",body);
-
+    console.log("data received to backend : ",body);
     const { breakroom_id, summary, responseData, correctness, missed } = body;
     console.log("breakroom_id : ",breakroom_id);
     // Insert the data into the Supabase table
       const { data, error } = await supabase
-      .from("summaries") // Replace with your actual table name
+      .from("summaries")
       .insert([{
         breakroom_details: breakroom_id,
         student_input: summary,

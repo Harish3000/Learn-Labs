@@ -52,6 +52,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Failed to fetch summaries." }, { status: 500 });
     }
 
+    console.log("data : ",data);
+
     // Return the fetched data
     return NextResponse.json(data, { status: 200 });
   } catch (error) {

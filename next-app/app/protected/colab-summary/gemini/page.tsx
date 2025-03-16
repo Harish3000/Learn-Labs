@@ -41,13 +41,11 @@ export default function Home() {
           console.warn("Token not found in cookies");
         }
   
-        // Debug: Check if local storage has data
         const storedData = localStorage.getItem("breakroomData");
-        console.log("Local Storage Breakroom Data: ", storedData);
   
         if (storedData) {
           const parsedData = JSON.parse(storedData);
-          setBreakroomData(parsedData); // Store in state
+          setBreakroomData(parsedData);
   
           for (const room of breakroomData) {
             if (room.student_id === userID) {
@@ -62,7 +60,7 @@ export default function Home() {
     };
   
     fetchData();
-  }, [userID]);  // Ensures effect runs only when `userID` is valid
+  }, [userID]);
 
   useEffect(() => {
     if (breakroom_id != -1 && userID != '' && !isFetched) {
@@ -97,7 +95,7 @@ export default function Home() {
   };
 
   const storeSummaryInDatabase = async (
-    breakroomID: number,
+    breakroom_id: number,
     summary: string,
     responseData: string,
     correctness: string,
@@ -110,7 +108,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          breakroomID,
+          breakroom_id,
           summary,
           responseData,
           correctness,
@@ -131,9 +129,16 @@ export default function Home() {
   };
 
   const handleSubmit = async () => {
-    await runChat(summary);
+    const generatedResponse = await runChat(summary);
+
+    if (!generatedResponse) {
+      console.error("Generated response is empty.");
+      toast.error("Error generating summary.");
+      return;
+    }
+
     if (breakroom_id != -1) {
-      await storeSummaryInDatabase(breakroom_id, summary, responseData, correctness, missed);
+      await storeSummaryInDatabase(breakroom_id, summary, generatedResponse, correctness, missed);
       // router.push(`/protected/colab-summary/dashboard`);
     }
   };
@@ -161,12 +166,14 @@ export default function Home() {
       });
 
       const result = await chat.sendMessage(prompt);
-      const response = result.response;
+      const response = result.response.text();
 
-      setResponseData(response.text());
+      setResponseData(response);
+      return response;
     } catch (error) {
       console.error("Error running chat:", error);
       toast.error("Error generating summary");
+      return "";
     }
   };
 
