@@ -6,14 +6,15 @@ export async function POST(req: Request) {
   try {
     const supabase = await createClient();
     const body = await req.json();
-    const { url, name, roomID, userID } = body;
+    const { url, name, roomID, userID, breakroom_id } = body;
+    console.log("breakroom id : ",breakroom_id);
     if (!url || !name) {
       return NextResponse.json({ error: 'URL and name are required' }, { status: 400 });
     }
 
     const { data, error } = await supabase
       .from('breakroom_details')
-      .insert([{ meeting_url : url, time_period : 10, student_name : name, room_id : roomID, student_id : userID }]);
+      .insert([{ meeting_url : url, time_period : 10, student_name : name, room_id : roomID, student_id : userID, breakroom_attendance: breakroom_id }]);
     
     if (error) {
       console.error('Supabase Error:', error.message);
@@ -51,9 +52,6 @@ export async function GET(req: Request) {
       console.error("Error fetching breakroom attendance data:", error);
       return NextResponse.json({ error: "Failed to fetch summaries." }, { status: 500 });
     }
-
-    console.log("data : ",data);
-
     // Return the fetched data
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
