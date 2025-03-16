@@ -80,11 +80,19 @@ const ChatBotComponent: FC = () => {
 
   const formatBotResponse = (response: string) => {
     try {
-      // Try parsing the response as JSON first
+      // Attempt to parse the response string as JSON
       const parsedResponse = JSON.parse(response);
 
+      // Extract `res` and `timestamp` fields
       const resContent = parsedResponse.res ?? "No response provided";
-      const timestampContent = parsedResponse.timestamp;
+      let timestampContent = parsedResponse.timestamp;
+
+      // Handle timestamp (ensure it's in the right format)
+      if (typeof timestampContent === "string") {
+        timestampContent = timestampContent.trim().endsWith("ms")
+          ? `${(parseInt(timestampContent) / 1000).toFixed(2)}s`
+          : timestampContent; // Convert milliseconds to seconds if it's in "ms"
+      }
 
       return (
         <div className="text-gray-300">
@@ -94,32 +102,9 @@ const ChatBotComponent: FC = () => {
             <strong className="text-gray-400">Timestamps:</strong>
             <div className="mt-1 flex flex-wrap">
               {timestampContent ? (
-                typeof timestampContent === "string" ? (
-                  timestampContent
-                    .split(", ")
-                    .filter((time: string) => time.trim() !== "")
-                    .map((time: string, index: number) => (
-                      <span
-                        key={index}
-                        className="text-blue-500 font-bold ml-1 p-1 rounded"
-                      >
-                        {time}
-                      </span>
-                    ))
-                ) : Array.isArray(timestampContent) ? (
-                  timestampContent.map((time: number, index: number) => (
-                    <span
-                      key={index}
-                      className="text-blue-500 font-bold ml-1 p-1 rounded"
-                    >
-                      {time.toFixed(2)}s
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-yellow-500 ml-1 p-1 rounded">
-                    {String(timestampContent)}
-                  </span>
-                )
+                <span className="text-blue-500 font-bold ml-1 p-1 rounded">
+                  {timestampContent}
+                </span>
               ) : (
                 <span className="text-gray-500 ml-1 p-1 rounded">
                   No timestamps provided
@@ -130,7 +115,7 @@ const ChatBotComponent: FC = () => {
         </div>
       );
     } catch (error) {
-      // If parsing fails, assume it's a non-JSON response and display it raw
+      // Handle cases where parsing fails
       console.error("Error parsing response:", error);
 
       return (
