@@ -5,7 +5,6 @@ import { api } from "@/convex/_generated/api";
 import Pdf from "/app/pdf.png";
 import Image from "next/image";
 import Link from "next/link";
-// import SyncButton from "../dashboard/_components/sync-button";
 
 const Dashboard: React.FC = () => {
   const fileList = useQuery(api.storage.GetUserFiles, {

@@ -30,7 +30,7 @@ import {
   LinkedinShare,
   TelegramShare,
   WhatsappShare,
- EmailShare 
+  EmailShare
 } from "react-share-kit";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
@@ -117,30 +117,75 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId, fileName }) => {
     }
 
     console.log("Exporting notes to PDF");
-    const content = editor.getHTML(); // Get the editor content as HTML
-    const doc = new jsPDF();
+    const content = editor.getHTML();
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
 
-    // Convert HTML content to an image
-    const editorContainer = document.createElement("div");
-    editorContainer.innerHTML = content;
-    document.body.appendChild(editorContainer); // Temporarily append for rendering
-    const canvas = await html2canvas(editorContainer, { scale: 2 });
-    document.body.removeChild(editorContainer); // Remove the temporary element
+    const margin = 15;
+    let yOffset = margin + 20; // Adjust for header space
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let pageCount = 1;
 
-    const imgData = canvas.toDataURL("image/png");
-    const imgProps = doc.getImageProperties(imgData);
-    const pdfWidth = doc.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    doc.setFont("Helvetica");
 
-    // Add the image to the PDF
-    doc.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    // Add the header to the first page
+    doc.setFontSize(20);
+    doc.setFont("Helvetica", "bold");
+    doc.text("IntelliNote Notes", margin, 15);
+    doc.setFontSize(12);
+    doc.line(margin, 18, 210 - margin, 18); // Underline header
 
-    // Trigger download
+    const parser = new DOMParser();
+    const docHTML = parser.parseFromString(content, "text/html");
+
+    docHTML.body.childNodes.forEach((node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as HTMLElement;
+
+        if (element.tagName === "H1") {
+          doc.setFontSize(18);
+          doc.setFont("Helvetica", "bold");
+        } else if (element.tagName === "H2") {
+          doc.setFontSize(16);
+          doc.setFont("Helvetica", "bold");
+        } else if (element.tagName === "H3") {
+          doc.setFontSize(14);
+          doc.setFont("Helvetica", "bold");
+        } else {
+          doc.setFontSize(12);
+          doc.setFont("Helvetica", "normal");
+        }
+
+        const text = element.innerText;
+        const splitText = doc.splitTextToSize(text, 180);
+
+        if (yOffset + splitText.length * 7 >= pageHeight - 20) {
+          addFooter(doc, pageCount);
+          doc.addPage();
+          pageCount++;
+          yOffset = margin;
+        }
+
+        doc.text(splitText, margin, yOffset);
+        yOffset += splitText.length * 7;
+      }
+    });
+
+    addFooter(doc, pageCount); // Add footer to the last page
     doc.save("notes.pdf");
     console.log("PDF downloaded successfully");
     toast.success("PDF downloaded successfully!");
   };
 
+  // Function to add footer with page numbers
+  const addFooter = (doc: jsPDF, pageNumber: number) => {
+    const pageHeight = doc.internal.pageSize.getHeight();
+    doc.setFontSize(10);
+    doc.text(`Page ${pageNumber}`, 100, pageHeight - 10);
+  };
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const shareUrl =
@@ -164,7 +209,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId, fileName }) => {
           Export
         </Button>
 
-       {/* Share Via Button */}
+        {/* Share Via Button */}
         <Dialog open={isShareModalOpen} onOpenChange={setIsShareModalOpen}>
           <DialogTrigger asChild>
             <Button size="sm">Share Via</Button>
@@ -175,24 +220,24 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId, fileName }) => {
             </DialogHeader>
             <div className="flex flex-wrap justify-center gap-4 pt-1 pb-1">
               <Tooltip content="Facebook" placement="bottom">
-                  <FacebookShare url={shareUrl} quote={shareTitle} className="w-100 h-20 text-white fill-current" round blankTarget />
+                <FacebookShare url={shareUrl} quote={shareTitle} className="w-100 h-20 text-white fill-current" round blankTarget />
               </Tooltip>
               <Tooltip content="LinkedIn" placement="bottom">
-                  <LinkedinShare url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round  blankTarget/>
+                <LinkedinShare url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round blankTarget />
               </Tooltip>
               <Tooltip content="Telegram" placement="bottom">
-                  <TelegramShare url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round  blankTarget/>
+                <TelegramShare url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round blankTarget />
               </Tooltip>
-              <Tooltip content="WhatsApp" placement="bottom">              
-                  <WhatsappShare url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round blankTarget/>           
+              <Tooltip content="WhatsApp" placement="bottom">
+                <WhatsappShare url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round blankTarget />
               </Tooltip>
-                   <Tooltip content="WhatsApp" placement="bottom">    
-                    <EmailShare
- url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round blankTarget
-  subject={'IntelliNote lecture Note'}
-  body={shareTitle}
-/>          
-                 
+              <Tooltip content="WhatsApp" placement="bottom">
+                <EmailShare
+                  url={shareUrl} title={shareTitle} className="w-full h-full text-white fill-current" round blankTarget
+                  subject={'IntelliNote lecture Note'}
+                  body={shareTitle}
+                />
+
               </Tooltip>
             </div>
             <div className="mt-1 flex justify-end">

@@ -13,12 +13,16 @@ import { Progress } from "@/components/ui/progress";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { usePathname } from "next/navigation";
+import { useUserFromCookie } from "@/utils/restrictClient";
 
 export default function Sidebar() {
   const path = usePathname();
   const fileList = useQuery(api.storage.GetUserFiles, {
     createdBy: "Admin"
   });
+
+  // Role-restricted user with redirection
+  const user = useUserFromCookie();
 
   return (
     <div className="fixed left-0 top-0 bottom-0 z-40 w-64 overflow-y-auto border-r bg-background p-4 shadow-lg">
@@ -37,14 +41,15 @@ export default function Sidebar() {
             </p>
           </div>
 
-          <UploadPdfDialog
-            isMaxFile={(fileList?.length ?? 0) >= 5 ? true : false}
-          >
-            <Button className="w-full gap-2 m-5">
-              <Upload className="h-4 w-4" /> Upload PDF
-            </Button>
-          </UploadPdfDialog>
-
+          {user && user.user_metadata?.role === "admin" && (
+            <UploadPdfDialog
+              isMaxFile={(fileList?.length ?? 0) >= 5 ? true : false}
+            >
+              <Button className="w-full gap-2 m-5">
+                <Upload className="h-4 w-4" /> Upload PDF
+              </Button>
+            </UploadPdfDialog>
+          )}
           <nav className="flex flex-col space-y-3">
             <Link href={"/protected/intelli-notes/dashboard"} className="text-sm font-medium">
               <div
