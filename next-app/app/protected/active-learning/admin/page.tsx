@@ -1,8 +1,15 @@
 // app/protected/page.tsx
 import { checkRole } from "@/utils/checkRoles";
+import { restrictServer, getUserFromServer } from "@/utils/restrictServer";
 
 const Admin = async () => {
-  const user = await checkRole(["admin"]);
+  // Role-restricted user with redirection
+  const user = await restrictServer(["admin"]);
+  // Unrestricted user for logging
+  const unrestrictedUser = await getUserFromServer();
+
+  // Log the unrestricted user
+  console.log("Retrieved user from server (no role check):", unrestrictedUser);
 
   return (
     <div>
