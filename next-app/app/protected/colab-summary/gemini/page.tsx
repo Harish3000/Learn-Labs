@@ -40,13 +40,13 @@ export default function Home() {
         } else {
           console.warn("Token not found in cookies");
         }
-  
+
         const storedData = localStorage.getItem("breakroomData");
-  
+
         if (storedData) {
           const parsedData = JSON.parse(storedData);
           setBreakroomData(parsedData);
-  
+
           for (const room of breakroomData) {
             if (room.student_id === userID) {
               setBreakroomID(room.breakroom_id);
@@ -58,7 +58,7 @@ export default function Home() {
         console.error("Error decoding token", error);
       }
     };
-  
+
     fetchData();
   }, [userID]);
 
@@ -90,7 +90,7 @@ export default function Home() {
     }
   }, [breakroom_id, userID]);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setSummary(event.target.value);
   };
 
@@ -139,7 +139,7 @@ export default function Home() {
 
     if (breakroom_id != -1) {
       await storeSummaryInDatabase(breakroom_id, summary, generatedResponse, correctness, missed);
-      // router.push(`/protected/colab-summary/dashboard`);
+      router.push(`/protected/colab-summary/dashboard`);
     }
   };
 
@@ -179,24 +179,25 @@ export default function Home() {
 
   return (
     <main>
-      <div className="w-full max-w-7xl mx-auto">
-        <h1 className="text-3xl font-semibold text-gray-800 mb-4">Submit your summary here</h1>
+      <h1 className="text-4xl font-semibold text-gray-800 mb-6 text-center">
+        Submit your summary here
+      </h1>
 
-        <div className="flex flex-col items-center w-full max-w-md mx-auto">
-          <input
-            type="text"
-            value={summary}
-            onChange={handleInputChange}
-            placeholder="Enter your summary"
-            className="p-4 border rounded-lg w-full text-black bg-white mb-4 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-          <button
-            onClick={handleSubmit}
-            className="p-4 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-all duration-200"
-          >
-            Submit
-          </button>
-        </div>
+      <div className="flex flex-col items-center w-full max-w-screen-xl mx-auto">
+        <textarea
+          value={summary}
+          onChange={handleInputChange}
+          placeholder="Enter your summary"
+          className="p-6 border rounded-lg w-full text-black bg-white mb-6 shadow-md 
+     focus:outline-none focus:ring-2 focus:ring-green-500 resize-none 
+     h-[500px] max-w-full"
+        />
+        <button
+          onClick={handleSubmit}
+          className="p-4 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-all duration-200 text-lg"
+        >
+          Submit
+        </button>
       </div>
     </main>
   );
