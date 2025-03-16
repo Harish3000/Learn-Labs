@@ -39,18 +39,14 @@ const supabase = createClient(
 // Utility function to clean bot response
 const cleanBotResponse = (botResponse: string) => {
   try {
-    // Try to parse the bot response if it's in JSON format
     const parsedResponse = JSON.parse(botResponse);
 
-    // Extract the "res" and "timestamp" values if available
     if (parsedResponse && parsedResponse.res && parsedResponse.timestamp) {
       return `${parsedResponse.res} (Given Timestamp: ${parsedResponse.timestamp})`;
     }
 
-    // If the response is not in the expected format, return it as-is
     return botResponse;
   } catch (error) {
-    // If parsing fails, return the original bot response
     return botResponse;
   }
 };
@@ -301,9 +297,72 @@ const FeedbackTable = ({ feedbackData }: { feedbackData: any[] }) => {
   );
 };
 
-// Dashboard component
+// Doubt Query Trend Component based on the keyword "doubt"
+const DoubtQueryTrend = ({ feedbackData }: { feedbackData: any[] }) => {
+  // Filter the feedback based on the keyword "doubt"
+  const keyword = "what";
+  const doubtQueries = feedbackData.filter((feedback) =>
+    feedback.user_message.toLowerCase().includes(keyword)
+  );
+
+  // Group the feedback by date to show trends
+  const groupedByDate = doubtQueries.reduce(
+    (acc: { [key: string]: number }, feedback) => {
+      const date = new Date(feedback.created_at).toLocaleDateString();
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
+  // Prepare data for the chart
+  const chartData = {
+    labels: Object.keys(groupedByDate),
+    datasets: [
+      {
+        label: `Doubt Queries containing "${keyword}"`,
+        data: Object.values(groupedByDate),
+        fill: true,
+        backgroundColor: "rgba(244, 63, 94, 0.2)",
+        borderColor: "#F43F5E",
+        borderWidth: 3,
+        tension: 0.4,
+        pointBackgroundColor: "#F43F5E",
+        pointBorderColor: "#ffffff",
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        hoverBackgroundColor: "#F43F5E",
+        hoverBorderColor: "#ffffff",
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+      title: {
+        display: true,
+        text: `Doubt Query Trend (Keyword: "${keyword}")`,
+      },
+    },
+  };
+
+  return (
+    <div className="h-72 bg-white shadow-lg rounded-lg p-6 flex justify-center pl-12">
+      <Line data={chartData} options={chartOptions} />
+    </div>
+  );
+};
+
+// Dashboard component with date filter
 const Dashboard = () => {
   const [feedbackData, setFeedbackData] = useState<any[]>([]);
+  const [filteredFeedback, setFilteredFeedback] = useState<any[]>([]);
+  const [wordFrequencies, setWordFrequencies] = useState<any[]>([]); // S// State for filtered feedback
+  const [selectedDate, setSelectedDate] = useState<string>(""); // State for selected date filter
 
   useEffect(() => {
     const fetchFeedbackData = async () => {
@@ -316,16 +375,48 @@ const Dashboard = () => {
         console.error("Error fetching feedback data:", error);
       } else {
         setFeedbackData(data);
+        setFilteredFeedback(data); // Initialize filtered feedback with all feedback
+      }
+    };
+
+    const fetchWordFrequencies = async () => {
+      const { data, error } = await supabase.rpc("get_word_frequencies"); // Call the SQL function
+
+      if (error) {
+        console.error("Error fetching word frequencies:", error);
+      } else {
+        setWordFrequencies(data); // Set the result to state
       }
     };
 
     fetchFeedbackData();
+    fetchWordFrequencies();
   }, []);
 
-  // Calculate statistics based on feedback data
-  const totalFeedback = feedbackData.length;
-  const thumbsUpCount = feedbackData.filter((item) => item.thumbs_up).length;
-  const thumbsDownCount = totalFeedback - thumbsUpCount;
+  // Function to handle date filter change
+  const handleDateFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = e.target.value;
+    setSelectedDate(selected);
+
+    if (selected) {
+      const filtered = feedbackData.filter(
+        (feedback) =>
+          new Date(feedback.created_at).toLocaleDateString() === selected
+      );
+      setFilteredFeedback(filtered);
+    } else {
+      setFilteredFeedback(feedbackData); // Reset filter to show all feedback
+    }
+  };
+
+  // Get unique dates for the filter dropdown
+  const uniqueDates = Array.from(
+    new Set(
+      feedbackData.map((feedback) =>
+        new Date(feedback.created_at).toLocaleDateString()
+      )
+    )
+  ).sort();
 
   return (
     <div className="bg-gray-50 min-h-screen pt-10 pb-20 px-4 sm:px-8">
@@ -335,21 +426,70 @@ const Dashboard = () => {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <StatisticCard title="Total Feedback" value={totalFeedback} />
-          <StatisticCard title="Positive Ratings" value={thumbsUpCount} />
-          <StatisticCard title="Negative Ratings" value={thumbsDownCount} />
+          <StatisticCard
+            title="Total Feedback"
+            value={filteredFeedback.length}
+          />
+          <StatisticCard
+            title="Positive Ratings"
+            value={filteredFeedback.filter((item) => item.thumbs_up).length}
+          />
+          <StatisticCard
+            title="Negative Ratings"
+            value={
+              filteredFeedback.length -
+              filteredFeedback.filter((item) => item.thumbs_up).length
+            }
+          />
+        </div>
+        {/* First two charts */}
+        <div className="mt-12">
+          <FeedbackChart feedbackData={filteredFeedback} />
         </div>
 
         <div className="mt-12">
-          <FeedbackChart feedbackData={feedbackData} />
+          <LineFeedbackChart feedbackData={filteredFeedback} />
+        </div>
+
+        {/* Date Filter */}
+        <div className="mb-6 mt-12">
+          <select
+            value={selectedDate}
+            onChange={handleDateFilterChange}
+            className="p-3 border border-gray-300 rounded-lg"
+          >
+            <option value="">-- Select a Lecture Date --</option>
+            {uniqueDates.map((date) => (
+              <option key={date} value={date}>
+                {date}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="mt-12">
-          <LineFeedbackChart feedbackData={feedbackData} />
+          <FeedbackTable feedbackData={filteredFeedback} />
         </div>
 
         <div className="mt-12">
-          <FeedbackTable feedbackData={feedbackData} />
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            Trending Words
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {wordFrequencies.slice(0, 10).map((word, index) => (
+              <div
+                key={index}
+                className="bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition duration-300 ease-in-out"
+              >
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {word.word}
+                </h3>
+                <p className="text-3xl font-bold text-gray-900">
+                  {word.frequency}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ const supabase = createClient(
 
 // Initialize LangChain Google Embeddings
 const embeddings = new GoogleGenerativeAIEmbeddings({
-  apiKey: process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY!,
+  apiKey: process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY_DOUBT_CLA!,
   modelName: "text-embedding-004", // Use the text-embedding-004 model (768 dimensions)
   taskType: TaskType.RETRIEVAL_DOCUMENT,
   title: "Document title",
@@ -41,14 +41,6 @@ const generateEmbedding = async (text: string) => {
 
 // Main API route handler
 export default async function GetTranscript() {
-  // Extract lecture and video metadata from the request, e.g., video_id and lecture_id
-  // const video_id = "j1eO9UOi-sc";
-  // const lecture_id = "1";
-
-  // const video_id = "wTLJooaVVCw";
-  //   const video_id = "x7oQC_R_yVo";
-  //   const lecture_id = "2";
-
   const video_id = "YGgvZF4Lu2I";
   const lecture_id = "3";
 

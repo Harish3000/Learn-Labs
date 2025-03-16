@@ -83,50 +83,58 @@ const ChatBotComponent: FC = () => {
 
   const formatBotResponse = (response: string) => {
     try {
-      // Parse the response as JSON
       const parsedResponse = JSON.parse(response);
 
-      if (parsedResponse.res && parsedResponse.timestamp) {
-        return (
-          <div className="text-gray-300">
-            <p className="text-white">{parsedResponse.res}</p>
-            <div className="mt-2">
-              <strong className="text-gray-400">Timestamps:</strong>
-              <div className="mt-1 flex flex-wrap">
-                {/* Split the timestamps by commas if it's a string */}
-                {typeof parsedResponse.timestamp === "string"
-                  ? parsedResponse.timestamp
-                      .split(", ")
-                      .map((time: string, index: number) => (
-                        <span
-                          key={index}
-                          className="text-blue-500 font-bold ml-1 p-1 rounded"
-                        >
-                          {time}
-                        </span>
-                      ))
-                  : parsedResponse.timestamp.map(
-                      (time: number, index: number) => (
-                        <span
-                          key={index}
-                          className="text-blue-500 font-bold ml-1 p-1 rounded"
-                        >
-                          {time.toFixed(2)}s
-                        </span>
-                      )
-                    )}
-              </div>
+      const resContent = parsedResponse.res ?? "No response provided";
+      const timestampContent = parsedResponse.timestamp;
+
+      return (
+        <div className="text-gray-300">
+          <p className="text-white">{resContent}</p>
+
+          <div className="mt-2">
+            <strong className="text-gray-400">Timestamps:</strong>
+            <div className="mt-1 flex flex-wrap">
+              {timestampContent ? (
+                typeof timestampContent === "string" ? (
+                  timestampContent
+                    .split(", ")
+                    .filter((time: string) => time.trim() !== "")
+                    .map((time: string, index: number) => (
+                      <span
+                        key={index}
+                        className="text-blue-500 font-bold ml-1 p-1 rounded"
+                      >
+                        {time}
+                      </span>
+                    ))
+                ) : Array.isArray(timestampContent) ? (
+                  timestampContent.map((time: number, index: number) => (
+                    <span
+                      key={index}
+                      className="text-blue-500 font-bold ml-1 p-1 rounded"
+                    >
+                      {time.toFixed(2)}s
+                    </span>
+                  ))
+                ) : (
+                  // In case timestamp is neither string nor array
+                  <span className="text-yellow-500 ml-1 p-1 rounded">
+                    {String(timestampContent)}
+                  </span>
+                )
+              ) : (
+                <span className="text-gray-500 ml-1 p-1 rounded">
+                  No timestamps provided
+                </span>
+              )}
             </div>
           </div>
-        );
-      }
-
-      // Fallback to raw response if parsing doesn't yield expected fields
-      return <p className="text-gray-300">{response}</p>;
+        </div>
+      );
     } catch (error) {
-      console.error("Failed to parse response:", error);
-      // Return the raw response if parsing fails
-      return <p className="text-gray-300">{response}</p>;
+      console.error("Error parsing response:", error);
+      return <p className="text-red-500">Failed to parse bot response</p>;
     }
   };
 

@@ -30,7 +30,7 @@ const validateQuestion = (question: string): boolean => {
 };
 
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const MAX_REQUESTS = 5; // Maximum requests per window
+const MAX_REQUESTS = 250; // Maximum requests per window
 const rateLimit = new Map<string, { count: number; lastRequest: number }>();
 
 const checkRateLimit = (ip: string): boolean => {
@@ -61,7 +61,7 @@ console.log("Test get chat:", supabase);
 
 // LangChain setup for embeddings
 const embeddings = new GoogleGenerativeAIEmbeddings({
-  apiKey: process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY!,
+  apiKey: process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY_DOUBT_CLA!,
   modelName: "text-embedding-004",
   taskType: TaskType.RETRIEVAL_DOCUMENT,
   title: "Document title",
@@ -77,7 +77,7 @@ const vectorSearch = async (query: string) => {
   // Perform Supabase  RPC call for vector search
   const { data, error } = await supabase.rpc("match_chunks", {
     query_embedding: queryEmbedding,
-    similarity_threshold: 0.4,
+    similarity_threshold: 0.6,
     match_count: 3,
   });
 
@@ -91,24 +91,26 @@ const vectorSearch = async (query: string) => {
 };
 
 const generateResponse = async (context: string, question: string) => {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY!;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY_DOUBT_CLA!;
 
   // Initialize the GoogleGenerativeAI client with your API key
   const genAI = new GoogleGenerativeAI(apiKey);
 
   // Get the specific model
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "tunedModels/doubtclarifyingv3-lo0wnxah3bbz",
   });
 
-  // Create the prompt for the model
   const prompt = `
-  You are a helpful assistant. If context is provided, refer to relevant timestamps and details in your response. If no context is provided, respond with a concise, general answer to the question.
-  Context: ${context} Question: ${question} 
-  The response should be a JSON object with the following structure:
-  {res: response_text, timestamp: refer to relevant timestamps} Send only the json object starting from {, nothing else.
-  Note: Ensure your responses are clear, direct, very short,not send timestamp in res section only in timestamp section, Direct and avoid repetitive phrases such as "The provided text" or "Based on the provided.
-  `;
+You are a helpful assistant. ONLY use the provided context to answer the question. DO NOT use general knowledge, assumptions, or external information. 
+If the context does NOT contain relevant information to answer the question, respond with:
+{res: "Not found in context", timestamp: ""}
+Context: ${context} Question: Question: ${question} 
+Respond ONLY with a JSON object in this structure:
+{res: response_text, timestamp: relevant timestamps from context} 
+Send ONLY the JSON object starting from {, nothing else.
+Instructions:If context includes relevant timestamps, refer to them., If no relevant content, return Not found in context & If the response is Not found in context ALWAYS set timestamp to empty string,Do NOT use phrases like "Based on the context".,Keep responses short, clear, and direct.,Do NOT guess, infer, or use external knowledge.
+`;
 
   try {
     // Generate content using the model with the prompt
