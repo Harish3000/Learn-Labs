@@ -105,7 +105,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   ]);
 
   const determineDifficulty = (): string => {
-    const difficulties = ["easy", "medium", "hard"];
+    const difficulties = ["1", "2", "3"];
     if (!lastPerformance) {
       const randomDifficulty =
         difficulties[Math.floor(Math.random() * difficulties.length)];
@@ -120,20 +120,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     if (final_result) {
       if (attempts === 1) {
-        if (displayed_difficulty === "easy") return "medium";
-        if (displayed_difficulty === "medium") return "hard";
-        return "hard";
+        if (displayed_difficulty === "1") return "2";
+        if (displayed_difficulty === "2") return "3";
+        return "3";
       } else if (attempts === 2) {
         return displayed_difficulty;
       } else {
-        if (displayed_difficulty === "hard") return "medium";
-        if (displayed_difficulty === "medium") return "easy";
-        return "easy";
+        if (displayed_difficulty === "3") return "2";
+        if (displayed_difficulty === "2") return "1";
+        return "1";
       }
     } else {
-      if (displayed_difficulty === "hard") return "medium";
-      if (displayed_difficulty === "medium") return "easy";
-      return "easy";
+      if (displayed_difficulty === "3") return "2";
+      if (displayed_difficulty === "2") return "1";
+      return "1";
     }
   };
 
