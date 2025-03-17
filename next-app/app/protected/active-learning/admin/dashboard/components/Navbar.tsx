@@ -29,7 +29,7 @@ export default function Navbar({
         onClick={() => handleTabClick("Courses")}
         className={`w-full border-2 border-black ${
           activeTab === "Courses"
-            ? "bg-transparent text-black border-4"
+            ? "bg-transparent text-black border-4 hover:bg-transparent hover:text-black hover:border-4"
             : "bg-black text-white border-2 hover:bg-white hover:text-black"
         }`}
       >
@@ -39,7 +39,7 @@ export default function Navbar({
         onClick={() => handleTabClick("Students")}
         className={`w-full border-2 border-black ${
           activeTab === "Students"
-            ? "bg-transparent text-black border-4"
+            ? "bg-transparent text-black border-4 hover:bg-transparent hover:text-black hover:border-4"
             : "bg-black text-white border-2 hover:bg-white hover:text-black"
         }`}
       >
@@ -49,7 +49,7 @@ export default function Navbar({
         onClick={() => handleTabClick("Preferences")}
         className={`w-full border-2 border-black ${
           activeTab === "Preferences"
-            ? "bg-transparent text-black border-4"
+            ? "bg-transparent text-black border-4 hover:bg-transparent hover:text-black hover:border-4"
             : "bg-black text-white border-2 hover:bg-white hover:text-black"
         }`}
       >
