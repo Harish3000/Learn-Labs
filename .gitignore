@@ -31,3 +31,6 @@ next-app/yarn-error.log*
 # Ignore macOS files
 .DS_Store
 
+# Ignore nodemodules
+node_modules/
+
