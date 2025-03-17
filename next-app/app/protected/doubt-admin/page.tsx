@@ -471,6 +471,7 @@ const Dashboard = () => {
             value={selectedDate}
             onChange={handleDateFilterChange}
             className="p-3 border border-gray-300 rounded-lg"
+            aria-label="Date"
           >
             <option value=""> Lecture Date </option>
             {uniqueDates.map((date) => (
