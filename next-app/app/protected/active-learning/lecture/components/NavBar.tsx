@@ -1,5 +1,3 @@
-// src/app/protected/active-learning/lecture/components/NavBar.tsx
-
 "use client"; // Mark as client component
 
 import React, { useEffect, useState } from "react";
@@ -12,8 +10,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface TranscriptChunk {
   chunk_id: number;
-  start_time: string;
-  end_time: string;
+  start_time: number; // in seconds
+  end_time: number; // in seconds
   text: string;
 }
 
@@ -36,11 +34,13 @@ const NavBar: React.FC<{ currentTime: number; videoId: string }> = ({
   );
   const [lastHighlighted, setLastHighlighted] = useState<number | null>(null);
 
+  // Handle component mounting
   useEffect(() => {
     setMounted(true);
     console.log("NavBar: Component mounted");
   }, []);
 
+  // Fetch lecture details and chapters
   useEffect(() => {
     if (!mounted) return;
 
@@ -69,8 +69,15 @@ const NavBar: React.FC<{ currentTime: number; videoId: string }> = ({
       if (error) {
         console.error("NavBar: Error fetching chapters:", error);
       } else {
-        console.log("NavBar: Chapters fetched:", data);
-        setChapters(data);
+        console.log("NavBar: Chapters fetched (raw):", data);
+        const parsedChapters = data.map((chunk: any) => ({
+          chunk_id: chunk.chunk_id,
+          start_time: parseFloat(chunk.start_time) / 1000,
+          end_time: parseFloat(chunk.end_time) / 1000,
+          text: chunk.text,
+        }));
+        setChapters(parsedChapters);
+        console.log("NavBar: Parsed chapters (in seconds):", parsedChapters);
       }
     };
 
@@ -78,20 +85,21 @@ const NavBar: React.FC<{ currentTime: number; videoId: string }> = ({
     if (videoId) fetchChapters();
   }, [mounted, lectureId, videoId]);
 
+  // Update highlighted chapter based on currentTime
   useEffect(() => {
     if (!mounted || chapters.length === 0) return;
 
     const currentChapter = chapters.find(
       (chapter) =>
-        currentTime >= parseFloat(chapter.start_time) &&
-        currentTime < parseFloat(chapter.end_time)
+        currentTime >= chapter.start_time && currentTime < chapter.end_time
     );
     const newHighlighted = currentChapter?.chunk_id || null;
+
     if (newHighlighted !== lastHighlighted) {
       console.log(
         "NavBar: Chapter changed to:",
-        newHighlighted,
-        "at time:",
+        newHighlighted === null ? "none" : newHighlighted,
+        "at time (seconds):",
         currentTime
       );
       setHighlightedChapter(newHighlighted);
@@ -99,8 +107,18 @@ const NavBar: React.FC<{ currentTime: number; videoId: string }> = ({
     }
   }, [currentTime, chapters, mounted, lastHighlighted]);
 
+  // Function to format chapter text: remove timestamp and show first 3 words
+  const formatChapterText = (text: string) => {
+    // Remove the timestamp prefix (e.g., "480ms: ")
+    const withoutTimestamp = text.replace(/^\d+ms:\s*/, "");
+    // Split into words and take the first 3
+    const words = withoutTimestamp.split(/\s+/);
+    const firstThreeWords = words.slice(0, 3).join(" ");
+    return `${firstThreeWords}...`;
+  };
+
   if (!mounted) {
-    return <div>Loading...</div>; // Simple placeholder to match server render
+    return <div>Loading...</div>;
   }
 
   return (
@@ -115,6 +133,7 @@ const NavBar: React.FC<{ currentTime: number; videoId: string }> = ({
       ) : (
         <p className="text-gray-500">Loading lecture...</p>
       )}
+
       <div>
         <h2 className="text-xl font-semibold text-gray-700 mb-4">Chapters</h2>
         <ul className="space-y-2">
@@ -127,7 +146,7 @@ const NavBar: React.FC<{ currentTime: number; videoId: string }> = ({
                   : "bg-white text-gray-700 hover:bg-gray-100"
               }`}
             >
-              Chapter {index + 1}: {chapter.text.substring(0, 30)}...
+              Chapter {index + 1}: {formatChapterText(chapter.text)}
             </li>
           ))}
         </ul>

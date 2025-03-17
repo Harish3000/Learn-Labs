@@ -95,6 +95,7 @@ export async function POST(req: Request) {
             question: question.question,
             options: JSON.stringify(question.options),
             answer: question.answer,
+            lecture_id: lectureId,
             difficulty: question.difficulty,
           });
 
