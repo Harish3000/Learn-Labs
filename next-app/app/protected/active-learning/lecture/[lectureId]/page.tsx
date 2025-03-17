@@ -25,7 +25,7 @@ interface Question {
   chunk_id: number;
   difficulty: string;
   question: string;
-  options: { [key: string]: string };
+  options: string; // Changed to string to match QuestionPopup
   answer: string;
 }
 

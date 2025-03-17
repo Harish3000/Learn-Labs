@@ -1,5 +1,3 @@
-// src/app/protected/active-learning/lecture/components/VideoPlayer.tsx
-
 "use client"; // Mark as client component
 
 import React, { useState, useRef, useEffect } from "react";
@@ -10,8 +8,8 @@ import { Play, Pause, Volume2, Maximize } from "lucide-react";
 
 interface TranscriptChunk {
   chunk_id: number;
-  start_time: string;
-  end_time: string;
+  start_time: string; // Now in milliseconds as text
+  end_time: string; // Now in milliseconds as text
 }
 
 interface Question {
@@ -19,7 +17,7 @@ interface Question {
   chunk_id: number;
   difficulty: string;
   question: string;
-  options: { [key: string]: string };
+  options: string; // Changed to string to match QuestionPopup
   answer: string;
 }
 
@@ -49,8 +47,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   lastPerformance,
 }) => {
   const [playing, setPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0); // Still in seconds for ReactPlayer
+  const [duration, setDuration] = useState(0); // Still in seconds for ReactPlayer
   const [volume, setVolume] = useState(0.8);
   const [showQuestion, setShowQuestion] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
@@ -61,16 +59,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     console.log("VideoPlayer: Component mounted");
     const interval = setInterval(() => {
       if (playerRef.current) {
-        const time = playerRef.current.getCurrentTime();
+        const time = playerRef.current.getCurrentTime(); // time in seconds
         setCurrentTime(time);
         onTimeUpdate(time);
 
-        const chunkEnding = transcriptChunks.find(
-          (chunk) =>
-            time >= parseFloat(chunk.end_time) - 0.1 &&
-            time < parseFloat(chunk.end_time) + 0.1 &&
+        const timeMs = time * 1000; // Convert to milliseconds for comparison
+        const chunkEnding = transcriptChunks.find((chunk) => {
+          const endTimeMs = parseFloat(chunk.end_time);
+          return (
+            timeMs >= endTimeMs - 100 && // Using 100ms instead of 0.1s
+            timeMs < endTimeMs + 100 &&
             chunk.chunk_id !== lastChunkId
-        );
+          );
+        });
         if (chunkEnding && !showQuestion) {
           const chunkQuestions = questions.filter(
             (q) => q.chunk_id === chunkEnding.chunk_id

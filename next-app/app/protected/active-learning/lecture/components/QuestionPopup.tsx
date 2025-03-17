@@ -1,5 +1,3 @@
-// src/app/protected/active-learning/lecture/components/QuestionPopup.tsx
-
 "use client"; // Mark as client component
 
 import React, { useState, useEffect, useRef } from "react";
@@ -9,7 +7,7 @@ import confetti from "canvas-confetti";
 interface Question {
   question_id: number;
   question: string;
-  options: { [key: string]: string };
+  options: string; // JSON string
   answer: string;
   difficulty: string;
 }
@@ -111,12 +109,15 @@ const QuestionPopup: React.FC<QuestionPopupProps> = ({ question, onClose }) => {
     setShowTryAgain(false);
   };
 
+  // Parse the JSON string of options
+  const parsedOptions: string[] = JSON.parse(question.options);
+
   return (
     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
         {showTryAgain ? (
           <>
-            <h2 className="text-xl font-semibold mb-4">
+            <h2 className="text-xl font-semibold mb-4 text-wrap break-words">
               Oops. Wrong answer. Try again
             </h2>
             <Button onClick={handleTryAgain} className="w-full">
@@ -125,29 +126,38 @@ const QuestionPopup: React.FC<QuestionPopupProps> = ({ question, onClose }) => {
           </>
         ) : answeredCorrectly ? (
           <div className="mt-4 text-green-600">
-            <p>
+            <p className="text-base text-wrap break-words">
               Congratulations!! Get ready to continue the lecture in {timeLeft}{" "}
               seconds...
             </p>
           </div>
         ) : (
           <>
-            <h2 className="text-xl font-semibold mb-4">{question.question}</h2>
+            <h2 className="text-lg font-semibold mb-4 text-wrap break-words">
+              {question.question}
+            </h2>
             <div className="grid gap-2 mb-4">
-              {Object.entries(question.options).map(([key, value]) => (
-                <Button
-                  key={key}
-                  onClick={() => handleOptionClick(key)}
-                  variant={selectedOption === key ? "default" : "outline"}
-                  className="w-full text-left"
-                >
-                  {key}: {value}
-                </Button>
-              ))}
+              {parsedOptions.map((option, index) => {
+                const optionKey = String.fromCharCode(65 + index); // A, B, C, D
+                return (
+                  <Button
+                    key={optionKey}
+                    onClick={() => handleOptionClick(optionKey)}
+                    variant={
+                      selectedOption === optionKey ? "default" : "outline"
+                    }
+                    className="w-full text-left text-sm text-wrap break-words py-2 h-auto"
+                  >
+                    {option}
+                  </Button>
+                );
+              })}
             </div>
           </>
         )}
-        <p className="mt-2 text-gray-500">Time left: {timeLeft} seconds</p>
+        <p className="mt-2 text-gray-500 text-sm">
+          Time left: {timeLeft} seconds
+        </p>
       </div>
     </div>
   );
