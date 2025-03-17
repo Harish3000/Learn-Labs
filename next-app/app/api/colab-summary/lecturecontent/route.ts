@@ -39,6 +39,10 @@ export async function PATCH(req: Request) {
         const body = await req.json();
         const { id, summaryCorrectness, summaryMissedPoints } = body;
 
+        console.log("id : ",id);
+        console.log("correctness : ",summaryCorrectness);
+        console.log("missing points : ",summaryMissedPoints);
+
         if (!id || !summaryCorrectness || !summaryMissedPoints) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }

@@ -304,7 +304,7 @@ Please respond with a JSON object in the following format:
 
   async function updateCorrectnessAndMissedPoints(data: any) {
     setStudentSummary(data.student_input);
-  
+
     if (lectureText && studentSummary) {
       // Proceed with the chat analysis only after both lectureText and studentSummary are available
       const generatedResponse = await runChatForDetailedAnalysis(studentSummary, lectureText);
@@ -312,16 +312,20 @@ Please respond with a JSON object in the following format:
         const finalSummary = await runChat2(lectureText);
         setFinalSummary(finalSummary);
         localStorage.setItem("finalSummary", JSON.stringify(finalSummary));
-  
-        await updateSummary(data.id, summaryCorrectness, summaryMissedPoints);
+
+        if (summaryCorrectness && summaryMissedPoints) {
+          await updateSummary(data.id, summaryCorrectness, summaryMissedPoints);
+        }
       }
     } else {
       console.error("Lecture content or student summary is not available.");
     }
-  }  
+  }
 
   const updateSummary = async (id: any, summaryCorrectness: string, summaryMissedPoints: string) => {
     console.log("updating summary...");
+    console.log("summary correctness : ", summaryCorrectness);
+    console.log("summary missing points : ", summaryMissedPoints);
     try {
       const response = await fetch("/api/colab-summary/lecturecontent", {
         method: "PATCH",
@@ -375,6 +379,8 @@ Please respond with a JSON object in the following format:
       }
 
       setLectureContent(data);
+      localStorage.setItem("lectureContent", JSON.stringify(lectureContent));
+
     } catch (error) {
       console.error("Error fetching breakroom details:", error);
       toast.error("Error fetching breakroom details.");
