@@ -29,6 +29,7 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "18.2.0",
     "react-hook-speech-to-text": "^0.8.0",
+    "react-icons": "^5.5.0",
     "react-toastify": "^11.0.5",
     "sweetalert2": "^11.14.5",
     "uuid": "^11.0.3",

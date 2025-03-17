@@ -287,6 +287,7 @@ Please respond with a JSON object in the following format:
       // Check if the response starts with the expected JSON structure
       try {
         const parsedResponse = JSON.parse(response);
+        console.log("parsedResponse : ",parsedResponse);
         setSummaryCorrectness(parsedResponse.correctness_score);
         setSummaryMissedPoints(parsedResponse.missing_points);
 
@@ -312,8 +313,10 @@ Please respond with a JSON object in the following format:
         const finalSummary = await runChat2(lectureText);
         setFinalSummary(finalSummary);
         localStorage.setItem("finalSummary", JSON.stringify(finalSummary));
+        localStorage.setItem("summaryID", JSON.stringify(data.id));
 
         if (summaryCorrectness && summaryMissedPoints) {
+          console.log("updating...");
           await updateSummary(data.id, summaryCorrectness, summaryMissedPoints);
         }
       }

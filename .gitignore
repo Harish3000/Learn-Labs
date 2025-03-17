@@ -33,3 +33,4 @@ next-app/yarn-error.log*
 # Ignore nodemodules
 node_modules/
 
+next-app/package-lock.json
