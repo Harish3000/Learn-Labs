@@ -170,10 +170,10 @@ const UpgradePlans: React.FC = () => {
                         </ul>
 
                         <a
-                            href="/protected/intelli-notes/dashboard/payment"
+                            href="#"
                             className="mt-8 block rounded-full border border-indigo-600 bg-indigo-600 px-12 py-3 text-center text-sm font-medium text-white hover:ring-1 hover:ring-indigo-600 focus:ring-3 focus:outline-hidden"
                         >
-                            Get Started
+                            Contact Admin
                         </a>
                     </div>
                 </div>

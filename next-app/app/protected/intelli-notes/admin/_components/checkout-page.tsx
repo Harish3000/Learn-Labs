@@ -45,7 +45,7 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
             elements,
             clientSecret,
             confirmParams: {
-                return_url: `${window.location.origin}/protected/intelli-notes/dashboard/payment-success?amount=${amount}`,
+                return_url: `${window.location.origin}/protected/intelli-notes/admin/payment-success?amount=${amount}`,
             },
         });
 

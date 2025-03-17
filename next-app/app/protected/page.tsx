@@ -35,7 +35,7 @@ export default async function ProtectedHomePage() {
             Collab Summary
           </button>
         </Link>
-        <Link href="/protected/intelli-notes">
+        <Link href="/protected/intelli-notes/admin">
           <button className="bg-blue-500 text-white px-4 py-2 rounded">
             Intelli Notes
           </button>
