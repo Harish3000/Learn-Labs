@@ -17,6 +17,7 @@ export default function ProcessPage() {
   const maxProgressRef = useRef<number>(0);
   const [currentPhase, setCurrentPhase] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState<boolean>(true);
+  const [lectureId, setLectureId] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const hasProcessed = useRef<boolean>(false);
@@ -51,6 +52,21 @@ export default function ProcessPage() {
         return;
       }
       const totalVideos: number = videos.length;
+
+      // Fetch lecture_id based on video_id using the same endpoint with POST
+      try {
+        const response = await fetch("/api/active-learning/final-data", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ videoId: videos[0].id }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setLectureId(data.lectureId);
+        }
+      } catch (error) {
+        console.error("Error fetching lecture ID:", error);
+      }
 
       const startTime: number = Date.now();
       let animationInterval: NodeJS.Timeout = setInterval(() => {
@@ -155,7 +171,7 @@ export default function ProcessPage() {
   }, [searchParams, phases.length]);
 
   const handleGoToFinalData = (): void => {
-    router.push("/protected/active-learning/final-data");
+    router.push(`/protected/active-learning/final-data?lectureId=${lectureId}`);
   };
 
   return (

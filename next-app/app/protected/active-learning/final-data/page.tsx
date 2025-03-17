@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner"; // Changed import
+import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,8 +22,8 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-// Interfaces remain unchanged
 interface LectureData {
   lecture_id: number;
   lecture_title: string;
@@ -51,6 +51,7 @@ interface VideoData {
 interface TranscriptChunkData {
   chunk_id: number;
   video_id: string;
+  lecture_id: number;
   start_time: string;
   end_time: string;
   text: string;
@@ -62,6 +63,7 @@ interface TranscriptChunkData {
 interface QuestionData {
   question_id: number;
   chunk_id: number;
+  lecture_id: number;
   display_time: string;
   question: string;
   options: string;
@@ -70,7 +72,7 @@ interface QuestionData {
   updated_time: string;
 }
 
-export default function BeautifiedDataManagement() {
+export default function FinalLectureData() {
   const [lectureData, setLectureData] = useState<LectureData[]>([]);
   const [videoData, setVideoData] = useState<VideoData[]>([]);
   const [transcriptChunkData, setTranscriptChunkData] = useState<
@@ -82,22 +84,48 @@ export default function BeautifiedDataManagement() {
   );
   const [changedData, setChangedData] = useState<Record<string, any>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  // Removed const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const lectureId = searchParams.get("lectureId");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/active-learning/final-data");
+        const response = await fetch(
+          `/api/active-learning/final-data?lectureId=${lectureId}`
+        );
         if (response.ok) {
           const data = await response.json();
-          setLectureData(data.lectures);
-          setVideoData(data.videos);
-          setTranscriptChunkData(data.transcriptChunks);
-          setQuestionData(
-            data.questions.sort(
-              (a: QuestionData, b: QuestionData) =>
-                a.question_id - b.question_id
+          setLectureData(
+            data.lectures.filter(
+              (lecture: LectureData) => lecture.lecture_id === Number(lectureId)
             )
+          );
+          setVideoData(
+            data.videos.filter(
+              (video: VideoData) => video.lecture_id === Number(lectureId)
+            )
+          );
+          setTranscriptChunkData(
+            data.transcriptChunks
+              .filter(
+                (chunk: TranscriptChunkData) =>
+                  chunk.lecture_id === Number(lectureId)
+              )
+              .sort(
+                (a: TranscriptChunkData, b: TranscriptChunkData) =>
+                  a.chunk_id - b.chunk_id
+              )
+          );
+          setQuestionData(
+            data.questions
+              .filter(
+                (question: QuestionData) =>
+                  question.lecture_id === Number(lectureId)
+              )
+              .sort(
+                (a: QuestionData, b: QuestionData) =>
+                  a.question_id - b.question_id
+              )
           );
         } else {
           console.error("Failed to fetch final data:", await response.text());
@@ -107,8 +135,10 @@ export default function BeautifiedDataManagement() {
       }
     };
 
-    fetchData();
-  }, []);
+    if (lectureId) {
+      fetchData();
+    }
+  }, [lectureId]);
 
   const handleUpdate = async (
     table: string,
@@ -128,7 +158,6 @@ export default function BeautifiedDataManagement() {
 
       if (response.ok) {
         toast.success("Update Successful", {
-          // Changed to sonner syntax
           description: `Updated ${table} data successfully`,
         });
         setUpdatedFields((prev) => ({ ...prev, [`${table}-${id}`]: false }));
@@ -136,7 +165,6 @@ export default function BeautifiedDataManagement() {
         await analyzeChanges(oldData, data);
       } else {
         toast.error("Update Failed", {
-          // Changed to sonner syntax
           description: `Failed to update ${table} data`,
           className: "text-gray-800",
         });
@@ -144,7 +172,6 @@ export default function BeautifiedDataManagement() {
     } catch (error) {
       console.error(`Error updating ${table} data:`, error);
       toast.error("Update Error", {
-        // Changed to sonner syntax
         description: `Error updating ${table} data`,
         className: "text-gray-800",
       });
@@ -170,7 +197,6 @@ export default function BeautifiedDataManagement() {
       if (response.ok) {
         console.log("Analysis completed successfully");
         toast.success("Analysis Completed", {
-          // Changed to sonner syntax
           description: "Changes have been analyzed and saved.",
           className: "text-gray-800",
         });
@@ -180,7 +206,6 @@ export default function BeautifiedDataManagement() {
     } catch (error) {
       console.error("Error analyzing changes:", error);
       toast.error("Analysis Error", {
-        // Changed to sonner syntax
         description: "Failed to analyze changes",
         className: "text-gray-800",
       });
