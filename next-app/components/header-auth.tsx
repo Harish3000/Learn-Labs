@@ -83,7 +83,7 @@ export default async function AuthButton() {
                 Collaborative-summary
               </Link>
               <Link
-                href="/protected/intelinote/admin/home"
+                href="/protected/intelli-notes/dashboard"
                 className="block px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
               >
                 Intelinote
