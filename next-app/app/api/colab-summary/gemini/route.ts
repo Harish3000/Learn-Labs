@@ -7,7 +7,6 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
-  console.log("Fetching student submitted summaries...");
   try {
     const { data, error } = await supabase
       .from("summaries")
@@ -17,9 +16,6 @@ export async function GET() {
       console.error("Error fetching summaries:", error);
       return NextResponse.json({ error: "Failed to fetch summaries." }, { status: 500 });
     }
-
-    console.log("Successfully fetched the summaries...");
-    console.log("Summary data : ",data);
 
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
@@ -31,25 +27,23 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log("data received to backend : ",body);
-    const { breakroom_id, summary, responseData, correctness, missed } = body;
-    console.log("breakroom_id : ",breakroom_id);
+    const { summary, responseData, correctness, missed, breakroomAttendanceDataID } = body;
     // Insert the data into the Supabase table
       const { data, error } = await supabase
       .from("summaries")
       .insert([{
-        breakroom_details: breakroom_id,
         student_input: summary,
         model_summary: responseData,
         correctness: correctness,
         missed_points: missed,
+        breakroom_details: breakroomAttendanceDataID,
       }]);
 
       if (error) {
         console.error("Error inserting data:", error);
         return NextResponse.json({ error: "Failed to store summary." }, { status: 500 });
       }
-    return NextResponse.json({ message: "Summary stored successfully." });
+    return NextResponse.json({ message: "Summary stored successfully.", data });
 
   } catch (error) {
     console.error("API Error:", error);

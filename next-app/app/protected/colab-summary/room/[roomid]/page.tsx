@@ -105,6 +105,9 @@ const Room = ({ params }: { params: { roomid: string } }) => {
         body: JSON.stringify({ url, name, roomID, userID, breakroom_id: breakroomID }),
       });
 
+      const responseDataRow = await response.json();  
+      localStorage.setItem("breakroomAttendance", JSON.stringify(responseDataRow.data));
+
       if (!response.ok) {
         console.error("Failed to store URL in database");
       }

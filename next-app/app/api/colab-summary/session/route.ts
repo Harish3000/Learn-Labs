@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
     const { data, error } = await supabase
       .from('breakroom_details')
-      .insert([{ meeting_url : url, time_period : 10, student_name : name, room_id : roomID, student_id : userID, breakroom_attendance: breakroom_id }]);
+      .insert([{ meeting_url : url, time_period : 10, student_name : name, room_id : roomID, student_id : userID, breakroom_attendance: breakroom_id }]).select("*").single();
     
     if (error) {
       console.error('Supabase Error:', error.message);

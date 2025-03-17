@@ -22,6 +22,7 @@ export default function Home() {
   const [missed, setMissed] = useState<string>("");
   const [breakroom_id, setBreakroomID] = useState<number>(-1);
   const [breakroomData, setBreakroomData] = useState<any[]>([]);
+  const [breakroomAttendanceDataID,setBreakroomAttendanceDataID] = useState<any>();
   const [isFetched, setIsFetched] = useState(false);
   const router = useRouter();
   const [userID, setUserID] = useState("");
@@ -54,6 +55,13 @@ export default function Home() {
             }
           }
         }
+
+        const storedDataAttendance = localStorage.getItem("breakroomAttendance");
+        if (storedDataAttendance) {
+          const parsedDataAttendance = JSON.parse(storedDataAttendance);
+          setBreakroomAttendanceDataID(parsedDataAttendance.id);
+        }
+
       } catch (error) {
         console.error("Error decoding token", error);
       }
@@ -95,11 +103,11 @@ export default function Home() {
   };
 
   const storeSummaryInDatabase = async (
-    breakroom_id: number,
     summary: string,
     responseData: string,
     correctness: string,
     missed: string,
+    breakroomAttendanceDataID: any,
   ) => {
     try {
       const response = await fetch("/api/colab-summary/gemini", {
@@ -108,11 +116,11 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          breakroom_id,
           summary,
           responseData,
           correctness,
           missed,
+          breakroomAttendanceDataID
         }),
       });
 
@@ -138,7 +146,7 @@ export default function Home() {
     }
 
     if (breakroom_id != -1) {
-      await storeSummaryInDatabase(breakroom_id, summary, generatedResponse, correctness, missed);
+      await storeSummaryInDatabase(summary, generatedResponse, correctness, missed, breakroomAttendanceDataID);
       router.push(`/protected/colab-summary/dashboard`);
     }
   };
