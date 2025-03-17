@@ -153,7 +153,7 @@ export default function Courses() {
                   </p>
                   <div className="mt-auto flex justify-end">
                     <Link
-                      href={`/dashboard/edit-lecture/${lecture.lecture_id}`}
+                      href={`/protected/active-learning/final-data?lectureId=${lecture.lecture_id}`}
                     >
                       <Button className="bg-blue-600 hover:bg-blue-700">
                         Edit
@@ -166,7 +166,7 @@ export default function Courses() {
           ))}
         </AnimatePresence>
       </div>
-      <Link href="/dashboard/create-lecture">
+      <Link href="/protected/active-learning/create-course">
         <Button
           variant="outline"
           className="fixed bottom-4 right-4 bg-black text-white hover:bg-white hover:text-black hover:border-2 hover:border-black text-lg py-6 px-8 rounded-xl shadow-lg transition-colors duration-200"

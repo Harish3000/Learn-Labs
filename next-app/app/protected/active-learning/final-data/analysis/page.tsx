@@ -21,6 +21,7 @@ import {
   ScatterChart,
 } from "recharts";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSearchParams } from "next/navigation";
 
 interface VectorAnalysisData {
   timestamps: string[];
@@ -72,6 +73,8 @@ export default function AnalysisPage() {
   const [analysisData, setAnalysisData] = useState<AnalysisData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const userEmail = searchParams.get("userEmail") || "admin@learnlabs.com";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,7 +82,7 @@ export default function AnalysisPage() {
         setLoading(true);
         const [vectorResponse, analysisResponse] = await Promise.all([
           fetch(
-            "/api/active-learning/get-vector-analysis?userEmail=admin@learnlabs.com"
+            `/api/active-learning/get-vector-analysis?userEmail=${encodeURIComponent(userEmail)}`
           ),
           fetch("/api/active-learning/get-analysis"),
         ]);
@@ -104,7 +107,7 @@ export default function AnalysisPage() {
     };
 
     fetchData();
-  }, []);
+  }, [userEmail]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -143,7 +146,7 @@ export default function AnalysisPage() {
   return (
     <div className="container mx-auto p-4 space-y-8">
       <h1 className="text-4xl font-bold mb-6 text-center text-primary">
-        Analysis Results
+        Preference analysis
       </h1>
 
       {analysisData.map((analysis, index) => (
