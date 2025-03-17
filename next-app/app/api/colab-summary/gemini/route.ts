@@ -26,10 +26,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    // Parse request body
     const body = await req.json();
     const { summary, responseData, correctness, missed, breakroomAttendanceDataID } = body;
+
     // Insert the data into the Supabase table
-      const { data, error } = await supabase
+    const { data, error } = await supabase
       .from("summaries")
       .insert([{
         student_input: summary,
@@ -37,12 +39,16 @@ export async function POST(req: Request) {
         correctness: correctness,
         missed_points: missed,
         breakroom_details: breakroomAttendanceDataID,
-      }]);
+      }])
+      .select("*")
+      .single();
 
-      if (error) {
-        console.error("Error inserting data:", error);
-        return NextResponse.json({ error: "Failed to store summary." }, { status: 500 });
-      }
+    if (error) {
+      console.error("Error inserting data:", error);
+      return NextResponse.json({ error: "Failed to store summary." }, { status: 500 });
+    }
+
+    // Return success message with inserted data
     return NextResponse.json({ message: "Summary stored successfully.", data });
 
   } catch (error) {
