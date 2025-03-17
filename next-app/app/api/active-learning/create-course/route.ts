@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { createCourseSchema } from "@/validators/course";
 import { createClient } from "@/utils/supabase/server";
+import { restrictServer, getUserFromServer } from "@/utils/restrictServer";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { title, links } = createCourseSchema.parse(body);
     const supabase = await createClient();
+    const user = await getUserFromServer();
 
     // Insert lecture data into Supabase
     const { data: lectureData, error: lectureError } = await supabase
@@ -17,6 +19,7 @@ export async function POST(req: Request) {
         playlist_id: "N/A",
         upload_date: new Date().toISOString(),
         is_active: true,
+        lecturer_email: user?.email ?? "admin@learnlabs.com",
         joined_students: "N/A",
       })
       .select();
