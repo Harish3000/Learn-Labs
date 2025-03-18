@@ -12,18 +12,16 @@ interface IntelliNotesProps {
 const IntelliNotes: React.FC<IntelliNotesProps> = ({ children }) => {
   const { user, loading } = useRestrictClient(["admin", "user"]); // Allow both roles but render different layouts
 
-  if (loading) {
+  // Show loading screen until we have user data
+  if (loading || !user) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
-  return (
-    <main className="flex items-center justify-center h-screen w-full bg-gray-50">
-      {user?.user_metadata?.role !== "admin" ? (
-        <DashboardLayout>{children}</DashboardLayout>
-      ) : (
-        <AdminLayout>{children}</AdminLayout>
-      )}
-    </main>
+  // Render the correct layout based on user role
+  return user?.user_metadata?.role === "admin" ? (
+    <AdminLayout>{children}</AdminLayout>
+  ) : (
+    <DashboardLayout>{children}</DashboardLayout>
   );
 };
 

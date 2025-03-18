@@ -11,12 +11,14 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] fixed">
+    <>
+      {/* <div className="flex min-h-[calc(1000vh-10rem)] fixed"> */}
       <Provider>
         <Sidebar />
       </Provider>
-      <div className="flex-1 p-6 md:ml-64">{children}</div>
-    </div>
+      <div className="md:ml-64">{children}</div>
+      {/*  </div> */}
+    </>
   );
 };
 

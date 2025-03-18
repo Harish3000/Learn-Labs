@@ -3,7 +3,9 @@ import React from 'react';
 const UpgradePlans: React.FC = () => {
     return (
         <div>
-            <h2 className='font-medium text-3xl'>Plans</h2>
+            <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold">Plan</h1>
+            </div>
             <p>Update your plan to upload multiple references to take notes.</p>
 
             <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-5 lg:px-8">
@@ -164,7 +166,7 @@ const UpgradePlans: React.FC = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                 </svg>
 
-                                <span className="text-gray-700"> Unlimted PDF Uploads with Note Taking </span>
+                                <span className="text-gray-700"> 20 PDF Uploads with Note Taking </span>
                             </li>
 
                         </ul>

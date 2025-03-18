@@ -64,9 +64,6 @@ export default function AdminPanel() {
   const keywordAnalytics = topKeywords || [];
 
   const latestNotes = useQuery(api.notes.GetAllNotes) || [];
-
-  const recommendedTopics = useQuery(api.notes.GetRecommendedTopics) || [];
-
   const chartConfig = {
     keywords: {
       label: "Keywords",
@@ -118,8 +115,9 @@ export default function AdminPanel() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="upgrade">Upgrade</TabsTrigger>
           <TabsTrigger value="upload">Notes Upload</TabsTrigger>
+          <TabsTrigger value="upgrade">Upgrade</TabsTrigger>
+
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -185,7 +183,7 @@ export default function AdminPanel() {
             {/* Latest Notes Created */}
             <Card className="col-span-3">
               <CardContent>
-                <h2 className="text-xl font-bold mt-4">Latest References Created</h2>
+                <h2 className="text-xl font-bold mt-4">Latest Notes Created</h2>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -223,7 +221,7 @@ export default function AdminPanel() {
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 mt-3">
                     {generatedTopics.map((topic, index) => (
                       <div key={index} className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg shadow-sm">
-                        
+
                         <span className="text-gray-700 font-medium">{topic}</span>
                       </div>
                     ))}
@@ -258,6 +256,35 @@ export default function AdminPanel() {
             </Card>
           </div>
         </TabsContent>
+
+        <TabsContent value="upload" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Note uploader</CardTitle>
+              <CardDescription>Upload your reference notes for the lectures in here</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="ml-10 h-[150px] w-[80%]">
+                {user && user.user_metadata?.role === "admin" && (
+                  <UploadPdfDialog
+                    isMaxFile={(fileList?.length ?? 0) >= 5 ? true : false}
+                  >
+                    <Button className="w-[50%] gap-2 m-5">
+                      <Upload className="h-4 w-4" /> Upload PDF
+                    </Button>
+                  </UploadPdfDialog>
+
+                )}
+
+              </div>
+              <div className="mt-5 w-[50%]">
+                <Progress value={((fileList?.length ?? 0) / 5) * 100} />
+                <p className="text-sm mt-1">{fileList?.length} Uploaded out of 5</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
 
         <TabsContent value="upgrade" className="space-y-4">
           <Card>
@@ -425,10 +452,10 @@ export default function AdminPanel() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
 
-                          <span className="text-gray-700"> Unlimted PDF Uploads with Note Taking </span>
+                          <span className="text-gray-700"> 20 PDF Uploads with Note Taking </span>
                         </li>
 
-                                             </ul>
+                      </ul>
 
                       <a
                         href="/protected/intelli-notes/admin/payment"
@@ -445,33 +472,7 @@ export default function AdminPanel() {
         </TabsContent>
 
 
-        <TabsContent value="upload" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Note uploader</CardTitle>
-              <CardDescription>Upload your reference notes for the lectures in here</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="ml-10 h-[150px] w-[80%]">
-                {user && user.user_metadata?.role === "admin" && (
-                  <UploadPdfDialog
-                    isMaxFile={(fileList?.length ?? 0) >= 10 ? true : false}
-                  >
-                    <Button className="w-[50%] gap-2 m-5">
-                      <Upload className="h-4 w-4" /> Upload PDF
-                    </Button>
-                  </UploadPdfDialog>
 
-                )}
-
-              </div>
-              <div className="mt-5 w-[50%]">
-                <Progress value={((fileList?.length ?? 0) / 10) * 100} />
-                <p className="text-sm mt-1">{fileList?.length} Uploaded out of 10</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
       </Tabs>
     </div>
