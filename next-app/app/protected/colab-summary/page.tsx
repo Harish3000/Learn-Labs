@@ -171,14 +171,6 @@ export default function Home() {
                   </button>
                 </div>
 
-                {/* Warning Section */}
-          <div className="mt-6 p-4 bg-red-500 text-white rounded-md flex items-center">
-            <FaExclamationTriangle className="mr-2 text-5xl" />
-            <p className="text-lg">
-              Note : If you miss used your time. That will be notified to your lecturer or instructor.
-            </p>
-          </div>
-
               </>
             )}
           </div>

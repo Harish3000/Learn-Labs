@@ -158,15 +158,6 @@ export default function Summaries() {
                 <p className="text-gray-500 text-justify">No missed points recorded.</p>
               )}
             </div>
-
-            {/* Warning Section */}
-            <div className="mt-6 p-4 bg-red-500 text-white rounded-md flex items-center">
-              <FaExclamationTriangle className="mr-2 text-7xl" />
-              <p className="text-lg">
-                If you have misused your meeting room time. This will be notified by your lecturer or instructor.
-              </p>
-            </div>
-
           </div>
         </div>
       </div>
