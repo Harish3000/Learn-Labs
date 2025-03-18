@@ -36,7 +36,7 @@ const UpgradePlans: React.FC = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                 </svg>
 
-                                <span className="text-gray-700"> 5 PDF Upload </span>
+                                <span className="text-gray-700"> 10 PDF Upload </span>
                             </li>
 
                             <li className="flex items-center gap-1">

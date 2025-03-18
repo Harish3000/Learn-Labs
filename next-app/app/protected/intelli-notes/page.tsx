@@ -18,10 +18,10 @@ const IntelliNotes: React.FC<IntelliNotesProps> = ({ children }) => {
 
   return (
     <main className="flex items-center justify-center h-screen w-full bg-gray-50">
-      {user?.user_metadata?.role === "admin" ? (
-        <AdminLayout>{children}</AdminLayout>
-      ) : (
+      {user?.user_metadata?.role !== "admin" ? (
         <DashboardLayout>{children}</DashboardLayout>
+      ) : (
+        <AdminLayout>{children}</AdminLayout>
       )}
     </main>
   );

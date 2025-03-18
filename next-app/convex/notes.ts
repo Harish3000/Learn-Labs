@@ -42,3 +42,11 @@ export const GetNotes = query({
     return result?.notes ?? '';
   }
 })
+
+export const GetAllNotes = query({
+  handler: async (ctx) => {
+    const result = await ctx.db.query("notes").collect();
+    return result.map(note => note.notes).flat(); // Flatten to get all text data
+  }
+});
+

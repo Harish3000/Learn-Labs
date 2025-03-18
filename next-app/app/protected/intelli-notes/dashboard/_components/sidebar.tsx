@@ -5,11 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Shield, Upload } from "lucide-react";
 import chatImage from "/app/mini.png";
-import UploadPdfDialog from "./upload-pdf-dialog";
 
 import { Button } from "@/components/ui/button";
 import { Layout } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { usePathname } from "next/navigation";
@@ -41,15 +39,6 @@ export default function Sidebar() {
             </p>
           </div>
 
-          {user && user.user_metadata?.role === "admin" && (
-            <UploadPdfDialog
-              isMaxFile={(fileList?.length ?? 0) >= 5 ? true : false}
-            >
-              <Button className="w-full gap-2 m-5">
-                <Upload className="h-4 w-4" /> Upload PDF
-              </Button>
-            </UploadPdfDialog>
-          )}
           <nav className="flex flex-col space-y-3">
             <Link href={"/protected/intelli-notes/dashboard"} className="text-sm font-medium">
               <div
@@ -69,10 +58,6 @@ export default function Sidebar() {
               </div>
             </Link>
           </nav>
-        </div>
-        <div className="absolute bottom-8 w[80%]">
-          <Progress value={((fileList?.length ?? 0) / 5) * 100} />
-          <p className="text-sm mt-1">{fileList?.length} Uploaded out of 5</p>
         </div>
       </div>
     </div>
