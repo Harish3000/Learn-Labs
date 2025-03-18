@@ -120,7 +120,21 @@ const UpgradePlans: React.FC = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                 </svg>
 
-                                <span className="text-gray-700"> Unlimted PDF Upload </span>
+                                <span className="text-gray-700"> Upload Videos Directly </span>
+                            </li>
+                            <li className="flex items-center gap-1">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth="1.5"
+                                    stroke="currentColor"
+                                    className="size-5 text-indigo-700"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                </svg>
+
+                                <span className="text-gray-700"> Ask Unlimted Doubts </span>
                             </li>
 
                             <li className="flex items-center gap-1">
@@ -135,7 +149,7 @@ const UpgradePlans: React.FC = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                 </svg>
 
-                                <span className="text-gray-700"> Unlimited Notes Taking </span>
+                                <span className="text-gray-700"> Multiple Co-Lab Meetings </span>
                             </li>
 
                             <li className="flex items-center gap-1">
@@ -150,25 +164,10 @@ const UpgradePlans: React.FC = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                 </svg>
 
-                                <span className="text-gray-700"> Email support </span>
+                                <span className="text-gray-700"> Unlimted PDF Uploads with Note Taking </span>
                             </li>
 
-                            <li className="flex items-center gap-1">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    className="size-5 text-indigo-700"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                </svg>
-
-                                <span className="text-gray-700"> Help center access </span>
-                            </li>
                         </ul>
-
                         <a
                             href="#"
                             className="mt-8 block rounded-full border border-indigo-600 bg-indigo-600 px-12 py-3 text-center text-sm font-medium text-white hover:ring-1 hover:ring-indigo-600 focus:ring-3 focus:outline-hidden"

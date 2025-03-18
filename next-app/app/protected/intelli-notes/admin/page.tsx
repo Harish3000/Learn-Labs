@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useUserFromCookie } from "@/utils/restrictClient"
 import { redirect } from "next/navigation"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, } from "recharts"
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
 import { FileText, Users, BookOpen, Search } from "lucide-react"
 import { useEffect, useState } from "react";
@@ -16,29 +16,12 @@ import { Upload } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { chatSession } from "@/configs/ai-model";
+import { generates } from "@/configs/generates";
+
 
 export default function AdminPanel() {
-  const notesData = useQuery(api.notes.GetAllNotes);
-  // const [keywordCounts, setKeywordCounts] = useState([]);
-
-  // useEffect(() => {
-  //   if (notesData) {
-  //     const text = notesData.join(" ").toLowerCase();
-  //     const words = text.match(/\b\w+\b/g) || []; // Extract words
-  //     const freqMap = words.reduce((acc, word) => {
-  //       acc[word] = (acc[word] || 0) + 1;
-  //       return acc;
-  //     }, {});
-
-  //     const sortedKeywords = Object.entries(freqMap)
-  //       .sort((a, b) => b[1] - a[1])
-  //       .slice(0, 5) // Get top 5 keywords
-  //       .map(([keyword, count]) => ({ keyword, count }));
-
-  //     setKeywordCounts(sortedKeywords);
-  //   }
-  // }, [notesData]);
-
   // Check if user is admin, redirect if not
   const user = useUserFromCookie()
 
@@ -77,36 +60,54 @@ export default function AdminPanel() {
     return count !== null && count !== undefined ? count : <Loader2 className="h-5 w-5 animate-spin text-gray-500" />;
   };
 
+  const topKeywords = useQuery(api.notes.GetTopKeywords);
+  const keywordAnalytics = topKeywords || [];
 
-  // Sample data for charts - replace with actual data from your backend
-  const mostUsedNotes = [
-    { name: "Physics Notes", count: 45 },
-    { name: "Chemistry Formulas", count: 38 },
-    { name: "Math Equations", count: 32 },
-    { name: "Biology Terms", count: 28 },
-    { name: "History Dates", count: 22 },
-  ]
+  const latestNotes = useQuery(api.notes.GetAllNotes) || [];
 
-  const keywordAnalytics = [
-    { keyword: "quantum physics", count: 67 },
-    { keyword: "organic chemistry", count: 54 },
-    { keyword: "calculus", count: 48 },
-    { keyword: "cell biology", count: 41 },
-    { keyword: "world war 2", count: 36 },
-  ]
+  const recommendedTopics = useQuery(api.notes.GetRecommendedTopics) || [];
 
   const chartConfig = {
-    notes: {
-      label: "Notes Usage",
-      color: "hsl(var(--chart-1))",
-      icon: BookOpen,
-    },
     keywords: {
       label: "Keywords",
       color: "hsl(var(--chart-2))",
       icon: Search,
     },
   }
+
+  const generateTopics = async () => {
+    if (!keywordAnalytics || keywordAnalytics.length === 0) {
+      console.warn("No keywords available for topic generation.");
+      return [];
+    }
+
+    // Extract keywords for the prompt
+    const keywordsList = keywordAnalytics.map(k => k.keyword).join(", ");
+
+    const TEXT = generates.TopicSugesstion([keywordsList]);
+
+    try {
+      const AiModelResult = await chatSession.sendMessage(TEXT);
+      const generatedText = AiModelResult.response.text();
+
+      // Convert AI response into a structured list
+      return generatedText.split("\n").filter(line => line.trim() !== "");
+    } catch (error) {
+      console.error("Error generating topics:", error);
+      return [];
+    }
+  };
+  const [generatedTopics, setGeneratedTopics] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      const topics = await generateTopics();
+      setGeneratedTopics(topics);
+    };
+
+    fetchTopics();
+  }, [keywordAnalytics]); // Re-run when new keywords are available
+
 
   return (
     <div className="space-y-6">
@@ -172,39 +173,78 @@ export default function AdminPanel() {
                 <Search className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold truncate">{keywordAnalytics[0]?.keyword || "No data"}</div>
-                <p className="text-xs text-muted-foreground">{keywordAnalytics[0]?.count || 0} searches</p>
+                <div className="text-2xl font-bold truncate"> {keywordAnalytics.length > 0 ? keywordAnalytics[0]?.keyword : "No data"}</div>
+                <p className="text-xs text-muted-foreground">
+                  {keywordAnalytics.length > 0 ? `${keywordAnalytics[0]?.count} searches` : "0 searches"}
+                </p>
               </CardContent>
             </Card>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle>Most Used Notes</CardTitle>
-                <CardDescription>Top 5 most accessed notes by users</CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <ChartContainer config={chartConfig} className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={mostUsedNotes}>
-                      <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={10} />
-                      <YAxis tickLine={false} axisLine={false} tickMargin={10} />
-                      <Tooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="count" fill="var(--color-notes)" radius={[4, 4, 0, 0]} name="Notes Usage" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+            {/* Latest Notes Created */}
+            <Card className="col-span-3">
+              <CardContent>
+                <h2 className="text-xl font-bold mt-4">Latest References Created</h2>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>File upload</TableHead>
+                      <TableHead>File Name</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {latestNotes.map((note) => (
+                      <TableRow key={note._id}>
+                        <TableCell>
+                          {new Date(note._creationTime).toLocaleString("en-GB", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </TableCell>
+                        <TableCell>{note.createdBy}</TableCell>
+                        <TableCell>{note.fileName}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+
+
+              <Separator orientation="horizontal" />
+              {/* Recommanded content */}
+              <CardContent>
+                <h2 className="text-xl font-bold mt-4">Recommended Topics for Upload</h2>
+                {generatedTopics.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 mt-3">
+                    {generatedTopics.map((topic, index) => (
+                      <div key={index} className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg shadow-sm">
+                        
+                        <span className="text-gray-700 font-medium">{topic}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center p-4 text-gray-500 bg-gray-100 rounded-lg mt-3">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <span>Generating topics...</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="col-span-3">
+            {/* Top keywords */}
+            <Card className="col-span-4">
               <CardHeader>
                 <CardTitle>Top Keywords</CardTitle>
                 <CardDescription>Most searched keywords in questions</CardDescription>
               </CardHeader>
               <CardContent>
-                <ChartContainer config={chartConfig} className="h-[350px]">
+                <ChartContainer className="h-[350px]" config={chartConfig}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={keywordAnalytics} layout="vertical">
                       <XAxis type="number" hide />
@@ -257,7 +297,7 @@ export default function AdminPanel() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
 
-                          <span className="text-gray-700"> 10 PDF Upload </span>
+                          <span className="text-gray-700"> Limited Videos Uploads</span>
                         </li>
 
                         <li className="flex items-center gap-1">
@@ -272,7 +312,7 @@ export default function AdminPanel() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
 
-                          <span className="text-gray-700"> Unlimited Notes Taking </span>
+                          <span className="text-gray-700"> Limited Doubt Clarify </span>
                         </li>
 
                         <li className="flex items-center gap-1">
@@ -287,7 +327,7 @@ export default function AdminPanel() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
 
-                          <span className="text-gray-700"> Email support </span>
+                          <span className="text-gray-700"> Single Co-Lab Meetings</span>
                         </li>
 
                         <li className="flex items-center gap-1">
@@ -302,7 +342,7 @@ export default function AdminPanel() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
 
-                          <span className="text-gray-700"> Help center access </span>
+                          <span className="text-gray-700"> 5 PDF Uploads with Note Taking </span>
                         </li>
                       </ul>
 
@@ -341,7 +381,21 @@ export default function AdminPanel() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
 
-                          <span className="text-gray-700"> Unlimted PDF Upload </span>
+                          <span className="text-gray-700"> Upload Videos Directly </span>
+                        </li>
+                        <li className="flex items-center gap-1">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="currentColor"
+                            className="size-5 text-indigo-700"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+
+                          <span className="text-gray-700"> Ask Unlimted Doubts </span>
                         </li>
 
                         <li className="flex items-center gap-1">
@@ -356,7 +410,7 @@ export default function AdminPanel() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
 
-                          <span className="text-gray-700"> Unlimited Notes Taking </span>
+                          <span className="text-gray-700"> Multiple Co-Lab Meetings </span>
                         </li>
 
                         <li className="flex items-center gap-1">
@@ -371,24 +425,10 @@ export default function AdminPanel() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
 
-                          <span className="text-gray-700"> Email support </span>
+                          <span className="text-gray-700"> Unlimted PDF Uploads with Note Taking </span>
                         </li>
 
-                        <li className="flex items-center gap-1">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="currentColor"
-                            className="size-5 text-indigo-700"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                          </svg>
-
-                          <span className="text-gray-700"> Help center access </span>
-                        </li>
-                      </ul>
+                                             </ul>
 
                       <a
                         href="/protected/intelli-notes/admin/payment"

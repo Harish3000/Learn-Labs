@@ -166,9 +166,9 @@ const EditorExtension: React.FC<EditorExtensionProps> = ({
     toast.info("Checking grammar...");
 
     try {
-      const prompt = `Correct the grammar of the following sentence:${selectedText}\nFixed Grammar:`;
+      const TEXT = generates.GrammerCkeck(selectedText);
 
-      const AiModelResult = await chatSession.sendMessage(prompt);
+      const AiModelResult = await chatSession.sendMessage(TEXT);
       const responseText = await AiModelResult.response.text();
       const correctedText = responseText.trim();
 
