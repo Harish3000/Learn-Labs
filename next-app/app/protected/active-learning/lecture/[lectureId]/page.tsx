@@ -172,11 +172,18 @@ const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
   const handleOk = async () => {
     setIsSubmitting(true);
     const result = await submitPerformance();
-    setIsSubmitting(false);
     if (result.success) {
+      await supabase.from("breakroom_attendance").insert({
+        student_id: user.id,
+        lecture_id: parseInt(params.lectureId),
+        created_at: new Date().toISOString(),
+        video_id: videoId,
+      });
       setShowConfirmModal(false);
       router.push("/protected/active-learning/lecture");
-    } else {
+    }
+    setIsSubmitting(false);
+    if (!result.success) {
       alert("Failed to submit performance. Please try again.");
     }
   };
