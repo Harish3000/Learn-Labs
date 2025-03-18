@@ -8,6 +8,7 @@ import NavBar from "@/app/protected/active-learning/lecture/components/NavBar";
 import VideoPlayer from "@/app/protected/active-learning/lecture/components/VideoPlayer";
 import ChatPlaceholder from "@/app/protected/active-learning/lecture/components/ChatPlaceholder";
 import { Button } from "@/components/ui/button";
+import { useRestrictClient, useUserFromCookie } from "@/utils/restrictClient";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -42,6 +43,7 @@ interface LecturePageProps {
 }
 
 const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
+  const user = useUserFromCookie();
   const [mounted, setMounted] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string>("");
   const [videoId, setVideoId] = useState<string>("");
@@ -138,7 +140,7 @@ const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
   const submitPerformance = async () => {
     console.log("LecturePage: Submitting performance metrics");
     const payload = {
-      student_id: "student_1", // Replace with actual student ID
+      student_id: user?.email ?? "Anonymous",
       lecture_id: parseInt(params.lectureId),
       performance: performanceMetrics,
     };
