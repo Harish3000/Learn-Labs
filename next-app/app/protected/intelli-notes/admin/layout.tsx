@@ -1,10 +1,10 @@
 import type React from "react"
-import type { Metadata } from "next"
+// import type { Metadata } from "next"
 
-export const metadata: Metadata = {
-    title: "Admin Panel - IntelliNote",
-    description: "Admin dashboard for IntelliNote application",
-}
+// export const metadata: Metadata = {
+//     title: "Admin Panel - IntelliNote",
+//     description: "Admin dashboard for IntelliNote application",
+// }
 
 export default function AdminLayout({
     children,

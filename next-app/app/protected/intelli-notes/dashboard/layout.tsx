@@ -3,13 +3,13 @@ import Sidebar from "./_components/sidebar";
 import Provider from "@/app/provider";
 import "/app/globals.css";
 import "../admin/layout";
-import type { Metadata } from "next"
+// import type { Metadata } from "next"
 
 
-export const metadata: Metadata = {
-    title: "Dashboard - IntelliNote",
-    description: "User dashboard for IntelliNote application",
-}
+// export const metadata: Metadata = {
+//     title: "Dashboard - IntelliNote",
+//     description: "User dashboard for IntelliNote application",
+// }
 
 interface DashboardLayoutProps {
   children: ReactNode;
