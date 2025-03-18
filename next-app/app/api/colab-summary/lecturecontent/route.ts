@@ -8,6 +8,9 @@ export async function GET(req: Request) {
         const lectureID = url.searchParams.get("lectureID");
         const videoID = url.searchParams.get("videoID");
 
+        console.log("lecture id : ",lectureID);
+        console.log("video id : ",videoID);
+
         if (!lectureID || !videoID) {
             return NextResponse.json({ error: "Missing required parameters." }, { status: 400 });
         }

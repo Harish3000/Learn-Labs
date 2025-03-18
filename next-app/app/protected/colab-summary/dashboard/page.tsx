@@ -163,7 +163,7 @@ export default function Summaries() {
             <div className="mt-6 p-4 bg-red-500 text-white rounded-md flex items-center">
               <FaExclamationTriangle className="mr-2 text-7xl" />
               <p className="text-lg">
-                You have misused 10% of your meeting room time. This will be notified by your lecturer or instructor.
+                If you have misused your meeting room time. This will be notified by your lecturer or instructor.
               </p>
             </div>
 

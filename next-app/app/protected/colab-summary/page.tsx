@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { UUID } from "node:crypto";
 import { useEffect, useState } from "react";
 import { v4 as uuid, UUIDTypes } from "uuid";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 export default function Home() {
   const { fullName, setFullName } = useUser();
@@ -169,6 +170,15 @@ export default function Home() {
                     Or create a new meeting
                   </button>
                 </div>
+
+                {/* Warning Section */}
+          <div className="mt-6 p-4 bg-red-500 text-white rounded-md flex items-center">
+            <FaExclamationTriangle className="mr-2 text-5xl" />
+            <p className="text-lg">
+              Note : If you miss used your time. That will be notified to your lecturer or instructor.
+            </p>
+          </div>
+
               </>
             )}
           </div>
