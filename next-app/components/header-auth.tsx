@@ -1,10 +1,10 @@
 // components/AuthButton.jsx
 import { signOutAction } from "@/app/actions";
 import { hasEnvVars } from "@/utils/supabase/check-env-vars";
+import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { createClient } from "@/utils/supabase/server";
 
 export default async function AuthButton() {
   const supabase = await createClient();
@@ -71,10 +71,10 @@ export default async function AuthButton() {
                 Active-learning analysis
               </Link>
               <Link
-                href="/protected/doubt-clarification/admin/home"
+                href="/protected/doubt-admin"
                 className="block px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
               >
-                Doubt-Clarification
+                DoubtZap
               </Link>
               <Link
                 href="/protected/collaborative-summary/admin/home"
