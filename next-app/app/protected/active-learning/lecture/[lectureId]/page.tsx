@@ -1,5 +1,3 @@
-// src/app/lecture/[lectureId]/page.tsx
-
 "use client"; // Mark as client component
 
 import React, { useEffect, useState } from "react";
@@ -9,6 +7,7 @@ import VideoPlayer from "@/app/protected/active-learning/lecture/components/Vide
 import ChatPlaceholder from "@/app/protected/active-learning/lecture/components/ChatPlaceholder";
 import { Button } from "@/components/ui/button";
 import { useRestrictClient, useUserFromCookie } from "@/utils/restrictClient";
+import { useRouter } from "next/navigation";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -42,8 +41,14 @@ interface LecturePageProps {
   params: { lectureId: string };
 }
 
+// Spinner component for loading state
+const Spinner = () => (
+  <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+);
+
 const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
   const user = useUserFromCookie();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string>("");
   const [videoId, setVideoId] = useState<string>("");
@@ -58,6 +63,8 @@ const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
     null
   );
   const [currentTime, setCurrentTime] = useState(0);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -155,8 +162,22 @@ const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
       }
       const result = await response.json();
       console.log("LecturePage: Performance submission result:", result);
+      return { success: true };
     } catch (error) {
       console.error("LecturePage: Error submitting performance:", error);
+      return { success: false, error };
+    }
+  };
+
+  const handleOk = async () => {
+    setIsSubmitting(true);
+    const result = await submitPerformance();
+    setIsSubmitting(false);
+    if (result.success) {
+      setShowConfirmModal(false);
+      router.push("/protected/active-learning/lecture");
+    } else {
+      alert("Failed to submit performance. Please try again.");
     }
   };
 
@@ -177,12 +198,39 @@ const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
             onPerformanceUpdate={handlePerformanceUpdate}
             lastPerformance={lastPerformance}
           />
-          <Button onClick={submitPerformance} className="mt-4 w-full">
-            Submit Performance
-          </Button>
+          <div className="mt-4 flex justify-end">
+            <Button
+              onClick={() => setShowConfirmModal(true)}
+              className="px-4 py-2"
+            >
+              Leave
+            </Button>
+          </div>
         </div>
       </div>
       <ChatPlaceholder />
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <p>Do you want to leave and submit performance?</p>
+            <div className="mt-4 flex justify-end space-x-2">
+              <Button
+                onClick={() => setShowConfirmModal(false)}
+                className="bg-white text-black border-4 border-black px-4 py-2 hover:bg-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleOk}
+                className="bg-black text-white px-4 py-2"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? <Spinner /> : "OK"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
