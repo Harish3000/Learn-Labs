@@ -70,9 +70,9 @@ export async function POST(req: Request) {
       const { error: videoError } = await supabase.from("videos").insert({
         lecture_id: lectureId,
         video_id: videoId,
-        video_title: `Video ${i + 1}`,
+        video_title: title,
         video_url: videoUrl,
-        duration_seconds: 0,
+        duration_seconds: 431480,
         start_timestamp: new Date().toISOString(),
         end_timestamp: new Date().toISOString(),
         video_sequence: i + 1,

@@ -127,8 +127,7 @@ const QuestionPopup: React.FC<QuestionPopupProps> = ({ question, onClose }) => {
         ) : answeredCorrectly ? (
           <div className="mt-4 text-green-600">
             <p className="text-base text-wrap break-words">
-              Congratulations!! Get ready to continue the lecture in {timeLeft}{" "}
-              seconds...
+              Congratulations!! Get ready to continue the lecture shortly !
             </p>
           </div>
         ) : (
@@ -156,7 +155,7 @@ const QuestionPopup: React.FC<QuestionPopupProps> = ({ question, onClose }) => {
           </>
         )}
         <p className="mt-2 text-gray-500 text-sm">
-          Time left: {timeLeft} seconds
+          Time left: {timeLeft} seconds...
         </p>
       </div>
     </div>

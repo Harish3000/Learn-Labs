@@ -65,10 +65,10 @@ export default async function AuthButton() {
           <div className="absolute left-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
             <div className="bg-white py-2 rounded-lg shadow-lg border border-gray-100">
               <Link
-                href="/protected/active-learning/admin/home"
+                href="/protected/active-learning/admin/dashboard"
                 className="block px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
               >
-                Active-learning
+                Active-learning analysis
               </Link>
               <Link
                 href="/protected/doubt-clarification/admin/home"

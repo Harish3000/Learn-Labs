@@ -34,7 +34,7 @@ interface LectureData {
   lecture_live_end: string;
   is_active: boolean;
   joined_students: string[];
-  lecturer_email: string; // New column added
+  lecturer_email: string;
 }
 
 interface VideoData {
@@ -191,7 +191,7 @@ export default function FinalLectureData() {
         body: JSON.stringify({
           oldData,
           newData,
-          userEmail: lectureData[0]?.lecturer_email || "admin@learnlabs.com", // Use lecturer_email if available
+          userEmail: lectureData[0]?.lecturer_email || "admin@learnlabs.com",
         }),
       });
 
@@ -710,7 +710,7 @@ export default function FinalLectureData() {
           </Card>
         </TabsContent>
       </Tabs>
-      <div className="flex justify-end mt-8">
+      <div className="flex justify-end mt-8 space-x-4">
         <Link
           href={`/protected/active-learning/final-data/analysis?userEmail=${encodeURIComponent(
             lectureData[0]?.lecturer_email || "admin@learnlabs.com"
@@ -729,6 +729,11 @@ export default function FinalLectureData() {
                 View Analysis
               </>
             )}
+          </Button>
+        </Link>
+        <Link href="/protected/active-learning/admin/dashboard" passHref>
+          <Button className="bg-blue-500 hover:bg-blue-600">
+            Go to Admin Dashboard
           </Button>
         </Link>
       </div>
