@@ -6,7 +6,6 @@ import { type CloudinaryUploadWidgetResults } from "next-cloudinary";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
 
 const VideoUploadForm: React.FC = () => {
   const [lectureTitle, setLectureTitle] = useState<string>("");
@@ -100,38 +99,31 @@ const VideoUploadForm: React.FC = () => {
         }}
       >
         {({ open }) => (
-          <Button
-            type="button" // Prevent form submission on upload click
-            onClick={() => {
-              console.log("Opening upload widget");
-              setIsUploading(true);
-              open();
-            }}
-            className="bg-blue-500 hover:bg-blue-600"
-            disabled={isUploading}
-          >
-            Upload Video
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              type="button" // Prevent form submission on upload click
+              onClick={() => {
+                console.log("Opening upload widget");
+                setIsUploading(true);
+                open();
+              }}
+              className="bg-blue-500 hover:bg-blue-600"
+              disabled={isUploading}
+            >
+              Upload Video
+            </Button>
+            {videoUrl && (
+              <Button
+                type="submit"
+                className="bg-green-500 hover:bg-green-600"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Creating Course..." : "Create Course"}
+              </Button>
+            )}
+          </div>
         )}
       </CldUploadWidget>
-      {isUploading && (
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity }}
-          className="flex justify-center"
-        >
-          <span className="text-gray-500">Uploading...</span>
-        </motion.div>
-      )}
-      {videoUrl && (
-        <Button
-          type="submit"
-          className="bg-green-500 hover:bg-green-600"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Creating Course..." : "Create Course"}
-        </Button>
-      )}
     </form>
   );
 };
