@@ -2,6 +2,14 @@ import React, { ReactNode } from "react";
 import Sidebar from "./_components/sidebar";
 import Provider from "@/app/provider";
 import "/app/globals.css";
+import "../admin/layout";
+// import type { Metadata } from "next"
+
+
+// export const metadata: Metadata = {
+//     title: "Dashboard - IntelliNote",
+//     description: "User dashboard for IntelliNote application",
+// }
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -9,12 +17,14 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] fixed">
+    <>
+      {/* <div className="flex min-h-[calc(1000vh-10rem)] fixed"> */}
       <Provider>
         <Sidebar />
       </Provider>
-      <div className="flex-1 overflow-auto p-6 md:ml-64">{children}</div>
-    </div>
+      <div className="md:ml-64">{children}</div>
+      {/*  </div> */}
+    </>
   );
 };
 

@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 export default function DeployButton() {
   return (
     <>
-      <Link href="/">
+      {/* <Link href="/">
         <Button className="flex items-center gap-2" size={"sm"}>
           <svg
             className="h-3 w-3"
@@ -16,7 +16,7 @@ export default function DeployButton() {
           </svg>
           <span>Version 1.0</span>
         </Button>
-      </Link>
+      </Link> */}
     </>
   );
 }

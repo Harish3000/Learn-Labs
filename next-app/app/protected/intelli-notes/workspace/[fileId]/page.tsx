@@ -7,6 +7,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import TextEditor from "../_components/text-editor";
 
+
 const Workspace: React.FC = () => {
   const params = useParams() as { fileId: string };
   const { fileId } = params;
