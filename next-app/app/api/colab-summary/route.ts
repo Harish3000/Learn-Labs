@@ -30,8 +30,8 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const { breakroomID, ids } = body;
 
-    console.log("breakroomID : ",breakroomID);
-    console.log("ids : ",ids);
+    // console.log("breakroomID : ",breakroomID);
+    // console.log("ids : ",ids);
 
     if (!breakroomID) {
       return NextResponse.json({ error: 'breakroomID is required' }, { status: 400 });
@@ -47,7 +47,7 @@ export async function PATCH(req: Request) {
       .update({ breakroom_id: breakroomID })
       .in('id', ids);
 
-      console.log("data : ",data);
+      // console.log("data : ",data);
 
     if (error) {
       console.error('Supabase Error:', error.message);

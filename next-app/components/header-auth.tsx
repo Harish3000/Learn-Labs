@@ -76,12 +76,12 @@ export default async function AuthButton() {
               >
                 DoubtZap
               </Link>
-              <Link
+              {/* <Link
                 href="/protected/collaborative-summary/admin/home"
                 className="block px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
               >
                 Collaborative-summary
-              </Link>
+              </Link> */}
               <Link
                 href="/protected/intelinote/admin/home"
                 className="block px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"

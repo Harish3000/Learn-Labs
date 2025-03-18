@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { UUID } from "node:crypto";
 import { useEffect, useState } from "react";
 import { v4 as uuid, UUIDTypes } from "uuid";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 export default function Home() {
   const { fullName, setFullName } = useUser();
@@ -169,6 +170,7 @@ export default function Home() {
                     Or create a new meeting
                   </button>
                 </div>
+
               </>
             )}
           </div>
