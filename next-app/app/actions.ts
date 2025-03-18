@@ -65,11 +65,11 @@ export const signInAction = async (formData: FormData) => {
 
   // Redirect based on role
   if (userRole === "admin") {
-    return redirect("/protected/active-learning/admin");
+    return redirect("/protected/active-learning/admin/dashboard");
   }
 
   // Default redirect for non-admin users
-  return redirect("/protected");
+  return redirect("/protected/active-learning/lecture");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
