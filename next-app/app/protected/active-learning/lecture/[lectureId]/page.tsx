@@ -174,7 +174,7 @@ const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
     const result = await submitPerformance();
     if (result.success) {
       await supabase.from("breakroom_attendance").insert({
-        student_id: user.id,
+        student_id: user?.id ?? "464ace95-2a92-4ea9-ad16-bd8123315fb2",
         lecture_id: parseInt(params.lectureId),
         created_at: new Date().toISOString(),
         video_id: videoId,
