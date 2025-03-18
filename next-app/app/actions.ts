@@ -8,27 +8,42 @@ import { redirect } from "next/navigation";
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
+  const role = formData.get("role")?.toString() || "user";
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
 
-  if (!email || !password) {
-    return { error: "Email and password are required" };
+  if (!email || !password || !role) {
+    return { error: "Email, password, and role are required" };
   }
 
-  const { error } = await supabase.auth.signUp({
+  // Step 1: Sign up the user
+  const { data, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      data: {
+        role,
+      },
       emailRedirectTo: `${origin}/auth/callback`,
     },
   });
 
-  if (error) {
-    console.error(error.code + " " + error.message);
-    return encodedRedirect("error", "/sign-up", error.message);
-  } else {
-    return encodedRedirect("success", "/protected", "Thanks for signing up!");
+  if (signUpError) {
+    console.error(signUpError.code + " " + signUpError.message);
+    return encodedRedirect("error", "/sign-up", signUpError.message);
   }
+
+  // Step 2: Store the role in the roles table
+  const { error: roleError } = await supabase
+    .from("roles")
+    .insert([{ user_id: data.user?.id, role }]);
+
+  if (roleError) {
+    console.error(roleError.message);
+    return encodedRedirect("error", "/sign-up", roleError.message);
+  }
+
+  return encodedRedirect("success", "/protected", "Thanks for signing up!");
 };
 
 export const signInAction = async (formData: FormData) => {
@@ -36,7 +51,7 @@ export const signInAction = async (formData: FormData) => {
   const password = formData.get("password") as string;
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error, data } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -45,6 +60,15 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
+  // Get the user role from user_metadata
+  const userRole = data.user?.user_metadata?.role;
+
+  // Redirect based on role
+  if (userRole === "admin") {
+    return redirect("/protected/active-learning/admin");
+  }
+
+  // Default redirect for non-admin users
   return redirect("/protected");
 };
 
