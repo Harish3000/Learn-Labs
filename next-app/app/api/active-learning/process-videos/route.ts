@@ -4,6 +4,7 @@ import { getTranscript } from "@/lib/youtube";
 import { processTranscript, generateQuestions } from "@/lib/gemini";
 import { transcribeVideo, getTranscriptWithTimestamps } from "@/lib/assemblyai";
 import { VideoInfo } from "@/types/video";
+import { restrictServer, getUserFromServer } from "@/utils/restrictServer";
 
 export async function POST(req: Request) {
   try {
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
       throw new Error(`Error updating video duration: ${updateError.message}`);
     }
 
-    //fetch lecture id to add to transcript chunk table
+    // Fetch lecture id to add to transcript chunk table
     const { data: videoData, error: videoError } = await supabase
       .from("videos")
       .select("lecture_id")
@@ -57,6 +58,55 @@ export async function POST(req: Request) {
     }
 
     const lectureId = videoData.lecture_id;
+
+    // Get user email
+    const user = await getUserFromServer();
+    const userEmail = user?.email ?? "admin@learnlabs.com";
+
+    // Fetch user preferences once before the loop
+    console.log("Fetching preferences for userEmail:", userEmail);
+    let { data: preferencesData, error: preferencesError } = await supabase
+      .from("user_feedback_preferences")
+      .select(
+        `
+        language_tone_preference,
+        sentence_structure_preference,
+        vocabulary_preference,
+        readability_preference,
+        clarity_preference
+      `
+      )
+      .eq("user_email", userEmail)
+      .limit(1)
+      .single();
+
+    console.log("Supabase response - preferencesData:", preferencesData);
+    console.log("Supabase response - preferencesError:", preferencesError);
+
+    if (preferencesError || !preferencesData) {
+      console.error(
+        "Error fetching user preferences or no preferences found:",
+        preferencesError
+      );
+      preferencesData = {
+        language_tone_preference: "neutral",
+        sentence_structure_preference: "simple",
+        vocabulary_preference: "standard",
+        readability_preference: "high",
+        clarity_preference: "clear",
+      };
+    }
+
+    const userPreferences = {
+      language_tone_preference: preferencesData.language_tone_preference,
+      sentence_structure_preference:
+        preferencesData.sentence_structure_preference,
+      vocabulary_preference: preferencesData.vocabulary_preference,
+      readability_preference: preferencesData.readability_preference,
+      clarity_preference: preferencesData.clarity_preference,
+    };
+
+    console.log("Final preferences used:", userPreferences);
 
     // Insert transcript chunks and generate questions
     for (const chapter of chapters) {
@@ -84,7 +134,8 @@ export async function POST(req: Request) {
 
       const chunkId = chunkData[0].chunk_id;
 
-      const questions = await generateQuestions(chapter.text);
+      // Pass userPreferences to generateQuestions instead of fetching inside
+      const questions = await generateQuestions(chapter.text, userPreferences);
 
       for (const question of questions) {
         const { error: questionError } = await supabase

@@ -85,8 +85,8 @@ export async function processTranscript(transcript: any[]) {
     1.In the transcript offset=start_time
     2.In the transcript offset+duration=end_time
     3.each chapter must be minimum 120 seconds long in total duration and maximum 900 seconds long total duration based on timestamp duration values in transcript
-    4..Each transcript must have minimum 2 chapters and maximum 8 chapters
-    5. For text attribute in the output expected output format below give it following way = 000005ms: [Sentence spoken] | 000012ms: [Sentence spoken] | 000020ms: [Sentence spoken] |  
+    4.Each transcript must have minimum 2 chapters and maximum 8 chapters
+    5.For text attribute in the output expected output format below give it following way = 000005ms: [Sentence spoken] | 000012ms: [Sentence spoken] | 000020ms: [Sentence spoken] |  
   ):
 
 ${transcriptString}
@@ -121,7 +121,16 @@ Please provide the output in the following format:
   return chapters;
 }
 
-export async function generateQuestions(chapterText: string) {
+export async function generateQuestions(
+  chapterText: string,
+  userPreferences: {
+    language_tone_preference: string;
+    sentence_structure_preference: string;
+    vocabulary_preference: string;
+    readability_preference: string;
+    clarity_preference: string;
+  }
+) {
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
     generationConfig: {
@@ -130,9 +139,27 @@ export async function generateQuestions(chapterText: string) {
     },
   });
 
+  const {
+    language_tone_preference,
+    sentence_structure_preference,
+    vocabulary_preference,
+    readability_preference,
+    clarity_preference,
+  } = userPreferences;
+
   const prompt = `Generate 3 multiple-choice questions (easy, medium, and hard) based on the following text:
-(IMPORTANT : the question must be answerable based on the text provided. Do not create out of scope of the text)
+(IMPORTANT: 
+  1. The questions must be answerable based on the text provided. Do not create out-of-scope questions.
+  2. Tailor the questions to the user's specific preferences:
+     - Language Tone: ${language_tone_preference}
+     - Sentence Structure: ${sentence_structure_preference}
+     - Vocabulary: ${vocabulary_preference}
+     - Readability: ${readability_preference}
+     - Clarity: ${clarity_preference}
+)
+
 ${chapterText}
+
 Please provide the output in the following format:
 [
   {
