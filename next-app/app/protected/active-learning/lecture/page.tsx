@@ -16,6 +16,7 @@ interface Lecture {
   lecture_live_start: string;
   lecture_live_end: string;
   is_active: boolean;
+  lecturer_email: string; // Added new field
   videos: {
     video_url: string;
     video_title: string;
@@ -156,6 +157,7 @@ export default function UpcomingLectures() {
               lecture.lecture_live_start,
               lecture.lecture_live_end
             );
+            const instructorName = lecture.lecturer_email.split("@")[0]; // Extract name before "@"
             return (
               <motion.div
                 key={lecture.lecture_id}
@@ -191,7 +193,7 @@ export default function UpcomingLectures() {
                       </p>
 
                       <p className="text-sm text-gray-500 mb-2">
-                        Instructor: Mr. Perera
+                        Instructor: {instructorName}
                       </p>
 
                       <p className="text-sm text-gray-500 mb-4">
