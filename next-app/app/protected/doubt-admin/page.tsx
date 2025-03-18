@@ -415,7 +415,7 @@ const Dashboard = () => {
     <div className="bg-gray-50 min-h-screen pt-10 pb-20 px-4 sm:px-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-semibold text-gray-800 mb-8">
-          Welcome to the Instructor Dashboard
+          Welcome to DoubtZap Dashboard ! 😎
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

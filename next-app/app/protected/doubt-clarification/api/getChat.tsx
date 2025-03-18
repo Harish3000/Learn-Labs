@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI, TaskType } from "@google/generative-ai";
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { createClient } from "@supabase/supabase-js";
+//import prompt from "./command";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,8 +30,8 @@ const validateQuestion = (question: string): boolean => {
   return !forbiddenPatterns.some((pattern) => pattern.test(question));
 };
 
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const MAX_REQUESTS = 250; // Maximum requests per window
+const RATE_LIMIT_WINDOW = 60 * 10000;
+const MAX_REQUESTS = 750; // Maximum requests per window
 const rateLimit = new Map<string, { count: number; lastRequest: number }>();
 
 const checkRateLimit = (ip: string): boolean => {
@@ -91,34 +92,35 @@ const vectorSearch = async (query: string) => {
 };
 
 const generateResponse = async (context: string, question: string) => {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY_DOUBT_CLA!;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY_DOUBT_CLAz!;
 
-  // Initialize the GoogleGenerativeAI client with your API key
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  // Get the specific model
+  // tunedModels/doubtclarifyingv3-lo0wnxah3bbz
+  //gemini-1.5-flash
   const model = genAI.getGenerativeModel({
-    model: "tunedModels/doubtclarifyingv3-lo0wnxah3bbz",
+    model: "tunedModels/doubtclarifyingv6-8xgw6oo36twd",
   });
 
-  const prompt = `
-You are a helpful assistant. ONLY use the provided context to answer the question. DO NOT use general knowledge, assumptions, or external information. 
-If the context does NOT contain relevant information to answer the question, respond with:
-{res: "Not found in context", timestamp: ""}
-Context: ${context} Question: Question: ${question} 
-Respond ONLY with a JSON object in this structure:
-{res: response_text, timestamp: relevant timestamps from context} 
-Send ONLY the JSON object starting from {, nothing else.
-Instructions:If context includes relevant timestamps, refer to them., If no relevant content, return Not found in context & If the response is Not found in context ALWAYS set timestamp to empty string,Do NOT use phrases like "Based on the context".,Keep responses short, clear, and direct.,Do NOT guess, infer, or use external knowledge.
-`;
+  const prompt = `You are a helpful assistant. ONLY use the provided context to answer the question. DO NOT use general knowledge, assumptions, or external information.
+  If the context does NOT contain relevant information to answer the question, respond with:
+  {"res": "Not found in context", "timestamp": ""}
+  Context: ${context}
+  Question: ${question}
+  Respond ONLY with a JSON object in this structure:
+  {"res": response_text, "timestamp": relevant timestamps from context}
+  Instructions:If context includes relevant timestamps, refer to them ,If no relevant content, return "Not found in context" and set timestamp to an empty string.,If the response is "Not found in context," ALWAYS set the timestamp to an empty string.
+  - Do NOT use phrases like "Based on the context."
+  - Keep responses short, clear, and direct.
+  - Do NOT guess, infer, or use external knowledge.
+  - DO NOT include markdown formatting, extra symbols, or backticks. Return ONLY the raw JSON object as plain text, **without any formatting** or code block markers.`;
 
   try {
     // Generate content using the model with the prompt
     const result = await model.generateContent(prompt);
 
     const x = result.response.text();
-
-    const y = JSON.parse(x);
+    console.log("response:", x);
 
     // Return the response content from the model
     return result.response.text();
@@ -128,15 +130,11 @@ Instructions:If context includes relevant timestamps, refer to them., If no rele
   }
 };
 
-export default async function GetChat(question: string, ip: string) {
+export default async function GetChat(question: string) {
   console.log(question);
 
   if (!validateQuestion(question)) {
     return "Your question contains restricted terms. Please rephrase.";
-  }
-
-  if (!checkRateLimit(ip)) {
-    return "Rate limit exceeded. Please try again later.";
   }
 
   try {

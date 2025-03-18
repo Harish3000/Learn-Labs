@@ -2,13 +2,13 @@
 
 "use client"; // Mark as client component
 
-import React, { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import ChatPlaceholder from "@/app/protected/active-learning/lecture/components/ChatPlaceholder";
 import NavBar from "@/app/protected/active-learning/lecture/components/NavBar";
 import VideoPlayer from "@/app/protected/active-learning/lecture/components/VideoPlayer";
-import ChatPlaceholder from "@/app/protected/active-learning/lecture/components/ChatPlaceholder";
 import { Button } from "@/components/ui/button";
-
+import { createClient } from "@supabase/supabase-js";
+import React, { useEffect, useState } from "react";
+import ChatBotComponent from "../../../doubt-clarification/chatbot";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -181,6 +181,7 @@ const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
         </div>
       </div>
       <ChatPlaceholder />
+      <ChatBotComponent />
     </div>
   );
 };

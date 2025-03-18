@@ -8,12 +8,45 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+const UpgradePopup: FC<{ onClose: () => void }> = ({ onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg text-center w-80">
+        <h2 className="text-white text-xl font-bold mb-2">
+          🚀 Get Pro for Faster Responses!
+        </h2>
+        <p className="text-gray-400 mb-4">
+          Unlock faster processing and better accuracy with the Pro version.
+        </p>
+        <div className="flex justify-center space-x-2">
+          <button
+            onClick={() => {
+              window.location.href = "/protected/intelli-notes/admin";
+            }}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+          >
+            Get Pro
+          </button>
+          <button
+            onClick={onClose}
+            className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ChatBotComponent: FC = () => {
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState<
     { user: string; bot: string; liked: boolean; disliked: boolean }[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [interactionCount, setInteractionCount] = useState(0);
 
   const handleSend = async () => {
     if (!message.trim()) return;
@@ -27,13 +60,18 @@ const ChatBotComponent: FC = () => {
     setLoading(true);
 
     try {
-      const data = await GetChat(userMessage, "");
+      const data = await GetChat(userMessage);
 
       setChat((prev) => {
         const updatedChat = [...prev];
         updatedChat[updatedChat.length - 1].bot = data;
         return updatedChat;
       });
+      setInteractionCount((prev) => prev + 1);
+
+      if (interactionCount + 1 >= 3) {
+        setShowPopup(true);
+      }
     } catch (error) {
       setChat((prev) => {
         const updatedChat = [...prev];
@@ -129,7 +167,7 @@ const ChatBotComponent: FC = () => {
   };
 
   return (
-    <div className="fixed right-4 bottom-16 w-80 h-[85vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col overflow-hidden">
+    <div className="absolute right-4 bottom-16 w-80 h-[70vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col overflow-hidden">
       <div className="bg-gray-900 text-white text-lg font-semibold p-4 rounded-t-lg">
         Live Doubt Clarification
       </div>
@@ -205,6 +243,7 @@ const ChatBotComponent: FC = () => {
           {loading ? "Sending..." : "Send"}
         </button>
       </div>
+      {showPopup && <UpgradePopup onClose={() => setShowPopup(false)} />}
     </div>
   );
 };
