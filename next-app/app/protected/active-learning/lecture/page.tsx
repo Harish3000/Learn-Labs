@@ -228,7 +228,7 @@ export default function UpcomingLectures() {
         </AnimatePresence>
       </div>
 
-      <Link href="/my-notes">
+      <Link href="/protected/intelli-notes/dashboard">
         <Button
           variant="outline"
           className="fixed bottom-4 right-4 bg-black text-white hover:bg-white hover:text-black hover:border-2 hover:border-black text-lg py-6 px-8 rounded-xl shadow-lg transition-colors duration-200"
