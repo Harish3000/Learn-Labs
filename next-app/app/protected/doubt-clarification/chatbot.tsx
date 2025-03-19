@@ -129,7 +129,7 @@ const ChatBotComponent: FC = () => {
       if (typeof timestampContent === "string") {
         timestampContent = timestampContent.trim().endsWith("ms")
           ? `${(parseInt(timestampContent) / 1000).toFixed(2)}s`
-          : timestampContent; // Convert milliseconds to seconds if it's in "ms"
+          : timestampContent;
       }
 
       return (
@@ -168,51 +168,49 @@ const ChatBotComponent: FC = () => {
 
   return (
     <div className="absolute right-4 bottom-16 w-80 h-[70vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col overflow-hidden">
-      <div className="bg-gray-900 text-white text-lg font-semibold p-4 rounded-t-lg">
+      <div className="bg-gray-900 text-white text-lg font-medium p-4 rounded-t-lg">
         Live Doubt Clarification
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto space-y-4 text-white">
         {chat.map((item, index) => (
-          <div key={index} className="space-y-1">
+          <div key={index} className="space-y-2">
             <div className="flex items-center space-x-2">
               <FaUser className="text-blue-400" />
               <p className="text-blue-400 font-semibold">You: {item.user}</p>
             </div>
-            <div className="flex items-center space-x-2">
-              <FaRobot className="text-gray-400" />
-              <div className="text-gray-300 text-container break-words">
+            <div className="flex items-start space-x-2">
+              <FaRobot className="text-gray-400 mt-1" />
+              <div className="text-gray-300 break-words">
                 {item.bot ? formatBotResponse(item.bot) : "Loading..."}
               </div>
-              {item.bot && (
-                <div className="ml-2 space-x-2">
-                  <button
-                    onClick={() =>
-                      sendFeedback(item.user, item.bot, true, index)
-                    }
-                    className={`p-1 transition duration-200 ${
-                      item.liked
-                        ? "text-green-500"
-                        : "text-gray-400 hover:text-green-500"
-                    }`}
-                  >
-                    <FaThumbsUp />
-                  </button>
-                  <button
-                    onClick={() =>
-                      sendFeedback(item.user, item.bot, false, index)
-                    }
-                    className={`p-1 transition duration-200 ${
-                      item.disliked
-                        ? "text-red-500"
-                        : "text-gray-400 hover:text-red-500"
-                    }`}
-                  >
-                    <FaFlag />
-                  </button>
-                </div>
-              )}
             </div>
+            {item.bot && (
+              <div className="flex justify-start space-x-2 ml-6">
+                <button
+                  onClick={() => sendFeedback(item.user, item.bot, true, index)}
+                  className={`p-1 transition duration-200 ${
+                    item.liked
+                      ? "text-green-500"
+                      : "text-gray-400 hover:text-green-500"
+                  }`}
+                >
+                  <FaThumbsUp />
+                </button>
+                <button
+                  onClick={() =>
+                    sendFeedback(item.user, item.bot, false, index)
+                  }
+                  className={`p-1 transition duration-200 ${
+                    item.disliked
+                      ? "text-red-500"
+                      : "text-gray-400 hover:text-red-500"
+                  }`}
+                >
+                  <FaFlag />
+                </button>
+              </div>
+            )}
           </div>
         ))}
         {loading && (
