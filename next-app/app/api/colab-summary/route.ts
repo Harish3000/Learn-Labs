@@ -27,6 +27,7 @@ export async function GET() {
 // **UPDATE BREAKROOM ID**
 export async function PATCH(req: Request) {
   try {
+    console.log("Deviding students into student groups...");
     const body = await req.json();
     const { breakroomID, ids } = body;
 
@@ -47,7 +48,7 @@ export async function PATCH(req: Request) {
       .update({ breakroom_id: breakroomID })
       .in('id', ids);
 
-      // console.log("data : ",data);
+      console.log("students devided into groups successfully...");
 
     if (error) {
       console.error('Supabase Error:', error.message);
