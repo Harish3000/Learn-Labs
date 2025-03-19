@@ -368,6 +368,8 @@ Please respond with a JSON object in the following format:
 
       const data = await response.json();
 
+      console.log("lecture data : ",data);
+
       if (Array.isArray(data)) {
         const concatenatedText = data
           .sort((a, b) => Number(a.chunk_sequence) - Number(b.chunk_sequence))
@@ -375,6 +377,8 @@ Please respond with a JSON object in the following format:
           .join(" ")
           .replace(/\d+ms:\s*/g, '')
           .replace(/\s*\|\s*/g, '');
+
+        console.log("Lecture content : ",concatenatedText);
 
         setLectureText(concatenatedText);
       } else {

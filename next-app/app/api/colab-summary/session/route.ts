@@ -48,6 +48,8 @@ export async function GET(req: Request) {
       .eq("breakroom_id", breakroomID)
       .eq("student_id", userID);
 
+    console.log("breakroom attendance data : ",data);
+
     if (error) {
       console.error("Error fetching breakroom attendance data:", error);
       return NextResponse.json({ error: "Failed to fetch summaries." }, { status: 500 });

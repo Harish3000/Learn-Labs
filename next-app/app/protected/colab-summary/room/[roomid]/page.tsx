@@ -144,6 +144,7 @@ const Room = ({ params }: { params: { roomid: string } }) => {
     storeUrlInDatabase(shareableLink, fullName, roomID, userID, breakroomID);
 
     const endMeetingTimer = setTimeout(() => {
+      console.log("ending meeting...");
       setMeetingEnded(true);
       Swal.fire({
         title: "Meeting Ended",
