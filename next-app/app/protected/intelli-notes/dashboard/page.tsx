@@ -8,7 +8,7 @@ import Link from "next/link";
 
 const Dashboard: React.FC = () => {
   const fileList = useQuery(api.storage.GetUserFiles, {
-    createdBy: "Admin"
+    createdBy: "Admin",
   });
 
   console.log("file list", fileList);
