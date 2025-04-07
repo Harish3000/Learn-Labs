@@ -181,7 +181,7 @@ const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
         video_id: videoId,
       });
       setShowConfirmModal(false);
-      router.push("/protected/active-learning/lecture");
+      router.push("/protected/colab-summary");
     }
     setIsSubmitting(false);
     if (!result.success) {
