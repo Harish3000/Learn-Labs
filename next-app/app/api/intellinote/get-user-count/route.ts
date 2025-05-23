@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 // Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
-  const supabase = await createClient();
   // Fetch total count of users (admins + users)
   const { count: totalCount, error: totalError } = await supabase
     .from("roles")
