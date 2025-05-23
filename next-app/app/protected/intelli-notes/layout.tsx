@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import DashboardLayout from "../intelli-notes/dashboard/layout";
-import AdminLayout from "../intelli-notes/admin/layout";
+import DashboardLayout from "./dashboard/layout";
+import AdminLayout from "./admin/layout";
 import { useRestrictClient } from "@/utils/restrictClient"; // Adjust the import path as needed
 
 interface IntelliNotesProps {
