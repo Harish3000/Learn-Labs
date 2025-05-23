@@ -30,6 +30,7 @@ export async function GET() {
 
 // **UPDATE BREAKROOM ID**
 export async function PATCH(req: Request) {
+  const supabase = await createClient();
   try {
     console.log("Deviding students into student groups...");
     const body = await req.json();
