@@ -1,4 +1,3 @@
-import FetchDataSteps from "@/components/tutorial/fetch-data-steps";
 import { createClient } from "@/utils/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -10,6 +9,8 @@ export default async function ProtectedHomePage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  console.log("use----------", user);
 
   if (!user) {
     return redirect("/sign-in");
@@ -34,7 +35,7 @@ export default async function ProtectedHomePage() {
             Collab Summary
           </button>
         </Link>
-        <Link href="/protected/intelli-notes">
+        <Link href="/protected/intelli-notes/admin">
           <button className="bg-blue-500 text-white px-4 py-2 rounded">
             Intelli Notes
           </button>

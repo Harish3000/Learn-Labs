@@ -2,6 +2,7 @@
 next-app/.next/
 next-app/out/
 next-app/build/
+next-app/package.lock.json
 
 # Ignore node_modules in next-app
 next-app/node_modules/
@@ -29,3 +30,8 @@ next-app/yarn-error.log*
 
 # Ignore macOS files
 .DS_Store
+
+# Ignore nodemodules
+node_modules/
+
+next-app/package-lock.json

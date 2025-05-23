@@ -51,7 +51,7 @@ export const signInAction = async (formData: FormData) => {
   const password = formData.get("password") as string;
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error, data } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -60,7 +60,16 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/protected");
+  // Get the user role from user_metadata
+  const userRole = data.user?.user_metadata?.role;
+
+  // Redirect based on role
+  if (userRole === "admin") {
+    return redirect("/protected/active-learning/admin/dashboard");
+  }
+
+  // Default redirect for non-admin users
+  return redirect("/protected/active-learning/lecture");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {

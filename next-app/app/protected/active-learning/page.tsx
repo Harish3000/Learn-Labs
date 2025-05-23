@@ -17,6 +17,7 @@ const ActiveLearning = () => {
           Go to Admin Only Page
         </button>
       </Link>
+      <Button>Create New course</Button>
     </div>
   );
 };
