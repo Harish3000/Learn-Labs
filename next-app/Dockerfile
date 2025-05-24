@@ -3,82 +3,71 @@
 # Stage 1: Install dependencies
 FROM node:18-alpine AS deps
 WORKDIR /app
-
-# Install libc6-compat for sharp, if you add it later for Image Optimization
-# Or for other native dependencies. It's good to have.
 RUN apk add --no-cache libc6-compat
-
-# Copy package.json and lock file
 COPY package.json package-lock.json* ./
-# If you use yarn:
-# COPY package.json yarn.lock ./
-# If you use pnpm:
-# COPY package.json pnpm-lock.yaml ./
-
-# Install dependencies
 RUN npm ci
-# If you use yarn:
-# RUN yarn install --frozen-lockfile
-# If you use pnpm:
-# RUN apk add --no-cache --virtual .gyp python3 make g++ && pnpm install --frozen-lockfile && apk del .gyp
 
 # Stage 2: Build the Next.js application
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Copy dependencies from the 'deps' stage
 COPY --from=deps /app/node_modules ./node_modules
-# Copy all source files
 COPY . .
 
-# Set Next.js telemetry to disabled
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Environment variables needed AT BUILD TIME
-# These will be passed in during the `docker build` command (or via Cloud Build arguments)
-# For any NEXT_PUBLIC_ variables your application needs during the build
-ARG NEXT_PUBLIC_SUPABASE_URL
-ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
-# Add other NEXT_PUBLIC_ build-time variables here as ARGs if needed
+# --- BEGIN: ADD PLACEHOLDER ENV VARS FOR BUILD ---
+# Active learning Component
+ENV NEXT_PUBLIC_SUPABASE_URL="http://placeholder.supabase.url"
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY="placeholder_supabase_anon_key"
+ENV NEXT_PUBLIC_GEMINI_API_KEY="placeholder_gemini_key"
+ENV NEXT_PUBLIC_GEMINI_API_KEY_ACTIVE_LEARNING="placeholder_gemini_active_learning_key"
+ENV NEXT_PUBLIC_YOUTUBE_API_KEY="placeholder_youtube_key"
+ENV NEXT_PUBLIC_ASSEMBLYAI_API_KEY="placeholder_assemblyai_key"
+ENV NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="placeholder_cloudinary_cloud_name"
+ENV NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET="placeholder_cloudinary_upload_preset"
+ENV NEXT_PUBLIC_CLOUDINARY_API_KEY="placeholder_cloudinary_api_key"
+ENV CLOUDINARY_API_SECRET="placeholder_cloudinary_api_secret"
 
-# Make ARG values available as ENV vars for the build process
-ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-# Add other NEXT_PUBLIC_ ENV assignments here if needed
+# Doubt Clarification component
+ENV NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY_DOUBT_CLA="placeholder_gemini_doubt_cla_key"
+ENV NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY_DOUBT_CLAz="placeholder_gemini_doubt_claz_key"
+
+# Collaborative Summarization component
+ENV NEXT_PUBLIC_COLLAB_SUMMARY_GEMINI_API_KEY="placeholder_collab_summary_gemini_key"
+ENV NEXT_PUBLIC_COLLAB_SUMMARY_MODEL_NAME="placeholder_collab_summary_model_name"
+ENV NEXT_PUBLIC_ZEGO_APP_ID="placeholder_zego_app_id"
+ENV NEXT_PUBLIC_ZEGO_SERVER_SECRET="placeholder_zego_server_secret"
+
+# Intellinotes
+ENV GOOGLE_GENERATIVE_AI_API_KEY_intellinote="placeholder_intellinote_gemini_key"
+ENV CONVEX_DEPLOYMENT="placeholder_convex_deployment"
+ENV NEXT_PUBLIC_CONVEX_URL="http://placeholder.convex.url"
+
+# Stripe
+ENV NEXT_PUBLIC_STRIPE_PUBLIC_KEY="pk_placeholder_stripe_public_key"
+ENV STRIPE_SECRET_KEY="sk_placeholder_stripe_secret_key" # This is likely the one causing the error
+# --- END: ADD PLACEHOLDER ENV VARS FOR BUILD ---
 
 # Build the Next.js application
-# This will use the .env variables made available above for the build
+# This will use the ENV variables defined above for the build
 RUN npm run build
 
 # Stage 3: Production image
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Set environment to production
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy standalone output
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-# Copy public assets
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-# Copy static assets (they are not part of standalone output but served by Next.js)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Set the user for the container
 USER nextjs
-
-# Expose the port the app runs on
 EXPOSE 3000
-
-# Environment variable for the port (Cloud Run will set this automatically)
-# You can remove this if your app correctly uses process.env.PORT
 ENV PORT 3000
-
-# Command to run the application
-# Note: For standalone output, the server is started directly with node
 CMD ["node", "server.js"]
