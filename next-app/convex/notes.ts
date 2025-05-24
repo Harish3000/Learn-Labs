@@ -3,7 +3,7 @@ import { v } from "convex/values";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { chatSession } from "@/configs/ai-model";
 
-const genAI = new GoogleGenerativeAI(`AIzaSyCgkJhM2g7diEVKanhfqeVNtxf04hba0LY`);
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY_intellinote!);
 
 
 export const AddNotes = mutation({

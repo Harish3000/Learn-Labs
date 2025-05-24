@@ -188,10 +188,7 @@ const TextEditor: React.FC<TextEditorProps> = ({ fileId, fileName }) => {
   };
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  const shareUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/workspace/${fileName}`
-      : "";
+  const shareUrl = `https://learn-labs-348802358133.asia-south1.run.app/protected/intelli-notes/workspace/${fileId}`;
 
   const shareTitle = `Check out my notes on "${fileName}" using IntelliNote:`;
 
