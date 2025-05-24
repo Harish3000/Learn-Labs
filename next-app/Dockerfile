@@ -16,7 +16,6 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# --- BEGIN: BUILD ARGUMENTS for NEXT_PUBLIC_ variables (REAL values will be passed here) ---
 ARG ARG_NEXT_PUBLIC_SUPABASE_URL
 ARG ARG_NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG ARG_NEXT_PUBLIC_GEMINI_API_KEY
@@ -34,9 +33,7 @@ ARG ARG_NEXT_PUBLIC_ZEGO_APP_ID
 ARG ARG_NEXT_PUBLIC_ZEGO_SERVER_SECRET
 ARG ARG_NEXT_PUBLIC_CONVEX_URL
 ARG ARG_NEXT_PUBLIC_STRIPE_PUBLIC_KEY
-# --- END: BUILD ARGUMENTS for NEXT_PUBLIC_ variables ---
 
-# --- BEGIN: Set NEXT_PUBLIC_ ENV vars from ARGs for build (REAL values) ---
 ENV NEXT_PUBLIC_SUPABASE_URL=${ARG_NEXT_PUBLIC_SUPABASE_URL}
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${ARG_NEXT_PUBLIC_SUPABASE_ANON_KEY}
 ENV NEXT_PUBLIC_GEMINI_API_KEY=${ARG_NEXT_PUBLIC_GEMINI_API_KEY}
@@ -54,19 +51,12 @@ ENV NEXT_PUBLIC_ZEGO_APP_ID=${ARG_NEXT_PUBLIC_ZEGO_APP_ID}
 ENV NEXT_PUBLIC_ZEGO_SERVER_SECRET=${ARG_NEXT_PUBLIC_ZEGO_SERVER_SECRET}
 ENV NEXT_PUBLIC_CONVEX_URL=${ARG_NEXT_PUBLIC_CONVEX_URL}
 ENV NEXT_PUBLIC_STRIPE_PUBLIC_KEY=${ARG_NEXT_PUBLIC_STRIPE_PUBLIC_KEY}
-# --- END: Set NEXT_PUBLIC_ ENV vars from ARGs for build ---
 
-# --- BEGIN: PLACEHOLDER ENV VARS for NON-PUBLIC (Server-Side) secrets during BUILD ---
-# These are only used if needed by the build process itself. Runtime uses Cloud Run ENV VARS.
 ENV CLOUDINARY_API_SECRET="placeholder_cloudinary_api_secret_build"
 ENV GOOGLE_GENERATIVE_AI_API_KEY_intellinote="placeholder_intellinote_gemini_key_build"
-ENV CONVEX_DEPLOYMENT="placeholder_convex_deployment_build" # Assuming this is server-side
+ENV CONVEX_DEPLOYMENT="placeholder_convex_deployment_build"
 ENV STRIPE_SECRET_KEY="sk_placeholder_stripe_secret_key_build"
-# --- END: PLACEHOLDER ENV VARS for NON-PUBLIC (Server-Side) secrets ---
 
-# Build the Next.js application
-# NEXT_PUBLIC_ vars will be inlined with their REAL values passed via ARGs
-# Server-side vars use placeholders if accessed during build, runtime will use actuals from Cloud Run
 RUN npm run build
 
 # Stage 3: Production image
@@ -85,9 +75,4 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000
-# ENV PORT 3000 # Cloud Run injects PORT automatically
-
-# CMD ["node", "server.js"] # This is for standalone output
-# If you are NOT using standalone output, it might be "next start"
-# Based on your previous Dockerfile, server.js is correct for standalone.
 CMD ["node", "server.js"]
