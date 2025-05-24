@@ -228,7 +228,6 @@ const FeedbackTable = ({ feedbackData }: { feedbackData: any[] }) => {
                 {feedback.user_message}
               </td>
               <td className="py-4 px-6 border-b text-sm text-gray-800 font-medium">
-                {/* Clean bot response before rendering */}
                 {cleanBotResponse(feedback.bot_response)}
               </td>
               <td className="py-4 px-6 border-b text-sm text-gray-800 font-medium">
@@ -368,7 +367,7 @@ const Dashboard = () => {
         console.error("Error fetching feedback data:", error);
       } else {
         setFeedbackData(data);
-        setFilteredFeedback(data); // Initialize filtered feedback with all feedback
+        setFilteredFeedback(data);
       }
     };
 
