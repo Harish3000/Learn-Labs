@@ -17,6 +17,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 
 # --- BEGIN: ADD PLACEHOLDER ENV VARS FOR BUILD ---
+
 # Active learning Component
 ENV NEXT_PUBLIC_SUPABASE_URL="http://placeholder.supabase.url"
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY="placeholder_supabase_anon_key"
@@ -46,11 +47,11 @@ ENV NEXT_PUBLIC_CONVEX_URL="http://placeholder.convex.url"
 
 # Stripe
 ENV NEXT_PUBLIC_STRIPE_PUBLIC_KEY="pk_placeholder_stripe_public_key"
-ENV STRIPE_SECRET_KEY="sk_placeholder_stripe_secret_key" # This is likely the one causing the error
+ENV STRIPE_SECRET_KEY="sk_placeholder_stripe_secret_key"
+
 # --- END: ADD PLACEHOLDER ENV VARS FOR BUILD ---
 
 # Build the Next.js application
-# This will use the ENV variables defined above for the build
 RUN npm run build
 
 # Stage 3: Production image
