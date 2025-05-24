@@ -7,7 +7,6 @@ export async function POST(req: Request) {
     const supabase = await createClient();
     const body = await req.json();
     const { url, name, roomID, userID, breakroom_id } = body;
-    console.log("breakroom id : ",breakroom_id);
     if (!url || !name) {
       return NextResponse.json({ error: 'URL and name are required' }, { status: 400 });
     }
@@ -47,8 +46,6 @@ export async function GET(req: Request) {
       .select("*")
       .eq("breakroom_id", breakroomID)
       .eq("student_id", userID);
-
-    console.log("breakroom attendance data : ",data);
 
     if (error) {
       console.error("Error fetching breakroom attendance data:", error);

@@ -5,7 +5,6 @@ import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
-import RecordMeeting from "../[roomid]/comp/RecordMeeting";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
@@ -21,72 +20,63 @@ const Room = ({ params }: { params: { roomid: string } }) => {
   const [isFetched, setIsFetched] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        let token = Cookies.get("sb-mmvkkgidcuocgkvxjljd-auth-token");
-        if (!token) {
-          console.warn("Token not found in cookies");
-          return;
-        }
-
-        if (token.startsWith("base64-")) {
-          token = token.replace("base64-", "");
-        }
-
-        const decodedToken = jwtDecode(atob(token));
-        const userId = decodedToken?.sub ?? "";
-
-        setUserID(userId);
-
-        const storedData = localStorage.getItem("breakroomData");
-        if (storedData) {
-          const parsedData = JSON.parse(storedData);
-          const userBreakroom = parsedData.find(
-            (room: any) => room.student_id === userId
-          );
-
-          if (userBreakroom) {
-            setBreakroomID(userBreakroom.id);
-          }
-        }
-      } catch (error) {
-        console.error("Error decoding token", error);
+  const fetchUserDataAndBreakroom = async () => {
+    try {
+      let token = Cookies.get("sb-mmvkkgidcuocgkvxjljd-auth-token");
+      if (!token) {
+        console.warn("Token not found in cookies");
+        return;
       }
-    };
 
-    fetchUserData();
-  }, []);
+      if (token.startsWith("base64-")) {
+        token = token.replace("base64-", "");
+      }
 
-  useEffect(() => {
-    if (breakroomID && userID && !isFetched) {
-      const fetchBreakroomDetails = async () => {
-        try {
-          const response = await fetch(
-            `/api/colab-summary/session?breakroomID=${breakroomID}&userID=${userID}`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+      const decodedToken = jwtDecode(atob(token));
+      const userId = decodedToken?.sub ?? "";
+      setUserID(userId);
 
-          if (!response.ok) {
-            throw new Error("Failed to fetch breakroom details.");
-          }
+      const storedData = localStorage.getItem("breakroomData");
+      let breakroomIdFromStorage: string | null = null;
 
-          const data = await response.json();
-          setBreakroomID(data[0].id);
-          setIsFetched(true);
-        } catch (error) {
-          console.error("Error fetching breakroom details:", error);
-          toast.error("Error fetching breakroom details.");
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        const userBreakroom = parsedData.find(
+          (room: any) => room.student_id === userId
+        );
+
+        if (userBreakroom) {
+          breakroomIdFromStorage = userBreakroom.id;
+          setBreakroomID(userBreakroom.id);
         }
-      };
+      }
 
-      fetchBreakroomDetails();
+      if (breakroomIdFromStorage && userId && !isFetched) {
+        const response = await fetch(
+          `/api/colab-summary/session?breakroomID=${breakroomIdFromStorage}&userID=${userId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch breakroom details.");
+        }
+
+        const data = await response.json();
+        setBreakroomID(data[0].id);
+        setIsFetched(true);
+      }
+
+    } catch (error) {
     }
-  }, [breakroomID, userID, isFetched]);
+  };
+
+  fetchUserDataAndBreakroom();
+}, []);
 
   // Function to store the URL in the database
   const storeUrlInDatabase = async (
@@ -144,7 +134,6 @@ const Room = ({ params }: { params: { roomid: string } }) => {
     storeUrlInDatabase(shareableLink, fullName, roomID, userID, breakroomID);
 
     const endMeetingTimer = setTimeout(() => {
-      console.log("ending meeting...");
       setMeetingEnded(true);
       Swal.fire({
         title: "Meeting Ended",
@@ -196,7 +185,6 @@ const Room = ({ params }: { params: { roomid: string } }) => {
   return (
     <div>
       <div className="w-full h-screen" ref={meetingContainerRef}></div>
-      <RecordMeeting meetingData={{ roomID, userID }} meetingEnded={meetingEnded} />
     </div>
   );
 };
