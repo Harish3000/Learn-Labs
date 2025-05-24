@@ -239,7 +239,7 @@ const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
           </div>
         </div>
       )}
-      <ChatBotComponent />
+      <ChatBotComponent lectureId={params.lectureId} />
     </div>
   );
 };

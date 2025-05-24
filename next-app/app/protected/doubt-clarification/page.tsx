@@ -53,7 +53,7 @@ const DoubtClarification = (props: { searchParams: any }) => {
             <FaRegCommentDots className="mr-2 text-blue-500" />
             Chat with the Bot
           </h2>
-          <ChatBotComponent />
+          <ChatBotComponent lectureId={props.searchParams.lectureId} />
         </div>
       </div>
 
