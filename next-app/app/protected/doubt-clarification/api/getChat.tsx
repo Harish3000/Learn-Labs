@@ -108,9 +108,14 @@ const generateResponse = async (
   });
 
   const prompt = `Use ONLY the provided context and lecture title to answer the question. Follow this logic strictly
-1. If the answer is directly found in the context, use it,
-2. If the answer is NOT in the context but is clearly related to the lecture title, you MAY answer using general knowledge based on the lecture topic. In this case, clearly indicate that the information is NOT in the lecture/context and is generated using general LLM knowledge.
-3. If the question cannot be answered from the context OR general knowledge based on the lecture topic, say so.
+STEP-BY-STEP LOGIC:
+1. If the question is asking for the lecture title — or is phrased in any way that clearly means “What is the title of this lecture?” (e.g., “What’s this lecture called?”, “Name of the lecture?”, “Give the title”) — return ONLY the exact string from the lecture title.
+2. If the answer is found in the context:
+   → Proceed ONLY if the answer is **clearly and directly relevant to the lecture title**.  
+   → If the answer is in the context but NOT clearly related to the lecture title, DO NOT return it. Treat it as NOT FOUND.
+3 If the answer is NOT found in the context but is clearly related to the lecture title topic, you MAY answer using general knowledge.
+→ If doing so, clearly indicate that it is not from the context.
+4. If the answer is neither in the context nor inferable from the lecture title, return that it is not found.
 Lecture Title: ${lectureTitle}
 Context: ${context}
 Question: ${question}
