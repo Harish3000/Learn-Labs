@@ -181,7 +181,7 @@ const LecturePage: React.FC<LecturePageProps> = ({ params }) => {
         </div>
       </div>
       <ChatPlaceholder />
-      <ChatBotComponent />
+      <ChatBotComponent lectureId={params.lectureId} />
     </div>
   );
 };
