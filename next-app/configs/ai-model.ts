@@ -5,16 +5,15 @@ import {
   GenerationConfig,
 } from "@google/generative-ai";
 
-//grammer check api key
-// const apiKey: string ='AIzaSyB9-suI-nIGx1--xsjxjEi3reOFD7u0Y0c'
+//intellinote api key
+// const apiKey: string ='AIzaSyBUd3SeazOqi66Rcpc6HzkTC0YyZk2hpdU'
 // default api key
-const apiKey: string = `AIzaSyD01IOfTQfBBpgPvYT0YCU_cAVKJGwPOSs`;
+const apiKey: string = `AIzaSyCgkJhM2g7diEVKanhfqeVNtxf04hba0LY`;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model: GenerativeModel = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
-  // model: "tunedModels/grammardataset1-js9icitawa2k",
-  // model:"tunedModels/lecture-note-dlak1u5bbze5",
+  // model:"tunedModels/final-intellinote-model-3ahfy3uq2flx"
 });
 
 const generationConfig: GenerationConfig = {
