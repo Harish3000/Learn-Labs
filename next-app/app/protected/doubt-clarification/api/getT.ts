@@ -63,9 +63,6 @@ export default async function GetTranscript() {
     const embeddings = await Promise.all(
       chunks.map(async (chunk, index) => {
         // Generate embedding for the transcript chunk
-
-        // console.log("chunk:", chunk);
-
         const embedding = await generateEmbedding(chunk);
 
         if (embedding.length == 0) {

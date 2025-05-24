@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { FaFlag, FaRobot, FaThumbsUp, FaUser } from "react-icons/fa";
 import GetChat from "./api/getChat";
 
@@ -39,7 +39,7 @@ const UpgradePopup: FC<{ onClose: () => void }> = ({ onClose }) => {
   );
 };
 
-const ChatBotComponent: FC = () => {
+const ChatBotComponent: FC<{ lectureId: string }> = ({ lectureId }) => {
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState<
     { user: string; bot: string; liked: boolean; disliked: boolean }[]
@@ -47,11 +47,32 @@ const ChatBotComponent: FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [interactionCount, setInteractionCount] = useState(0);
+  const [lectureTitle, setLectureTitle] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLectureTitle = async () => {
+      const { data, error } = await supabase
+        .from("lectures")
+        .select("lecture_title")
+        .eq("lecture_id", lectureId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching lecture title:", error.message);
+        setLectureTitle("Unknown Lecture");
+      } else {
+        setLectureTitle(data.lecture_title);
+      }
+    };
+
+    fetchLectureTitle();
+  }, [lectureId]);
 
   const handleSend = async () => {
     if (!message.trim()) return;
 
     const userMessage = message;
+
     setChat((prev) => [
       ...prev,
       { user: userMessage, bot: "", liked: false, disliked: false },
@@ -60,7 +81,7 @@ const ChatBotComponent: FC = () => {
     setLoading(true);
 
     try {
-      const data = await GetChat(userMessage);
+      const data = await GetChat(userMessage, lectureTitle || "");
 
       setChat((prev) => {
         const updatedChat = [...prev];
@@ -129,7 +150,7 @@ const ChatBotComponent: FC = () => {
       if (typeof timestampContent === "string") {
         timestampContent = timestampContent.trim().endsWith("ms")
           ? `${(parseInt(timestampContent) / 1000).toFixed(2)}s`
-          : timestampContent;
+          : timestampContent; // Convert milliseconds to seconds if it's in "ms"
       }
 
       return (
@@ -169,7 +190,7 @@ const ChatBotComponent: FC = () => {
   return (
     <div className="absolute right-4 bottom-16 w-80 h-[70vh] bg-gray-800 border border-gray-700 rounded-lg shadow-lg flex flex-col overflow-hidden">
       <div className="bg-gray-900 text-white text-lg font-medium p-4 rounded-t-lg">
-        Live Doubt Clarification
+        Live Doubt Clarification - {lectureTitle || lectureId}
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto space-y-4 text-white">
