@@ -8,7 +8,7 @@ import {
 //intellinote api key
 // const apiKey: string ='AIzaSyBUd3SeazOqi66Rcpc6HzkTC0YyZk2hpdU'
 // default api key
-const apiKey: string = `AIzaSyD01IOfTQfBBpgPvYT0YCU_cAVKJGwPOSs`;
+const apiKey: string = `AIzaSyCgkJhM2g7diEVKanhfqeVNtxf04hba0LY`;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model: GenerativeModel = genAI.getGenerativeModel({
