@@ -8,8 +8,8 @@ export async function GET(req: Request) {
         const lectureID = url.searchParams.get("lectureID");
         const videoID = url.searchParams.get("videoID");
 
-        console.log("lecture id : ",lectureID);
-        console.log("video id : ",videoID);
+        console.log("lecture id : ", lectureID);
+        console.log("video id : ", videoID);
 
         if (!lectureID || !videoID) {
             return NextResponse.json({ error: "Missing required parameters." }, { status: 400 });
@@ -42,9 +42,9 @@ export async function PATCH(req: Request) {
         const body = await req.json();
         const { id, summaryCorrectness, summaryMissedPoints } = body;
 
-        console.log("id : ",id);
-        console.log("correctness : ",summaryCorrectness);
-        console.log("missing points : ",summaryMissedPoints);
+        console.log("id : ", id);
+        console.log("correctness : ", summaryCorrectness);
+        console.log("missing points : ", summaryMissedPoints);
 
         if (!id || !summaryCorrectness || !summaryMissedPoints) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -60,7 +60,7 @@ export async function PATCH(req: Request) {
             })
             .eq('id', id).select("*").single();
 
-            // console.log("data updated : ",data);
+        // console.log("data updated : ",data);
 
         if (error) {
             console.error('Supabase Error:', error.message);

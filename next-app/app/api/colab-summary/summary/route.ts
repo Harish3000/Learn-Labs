@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   try {
     const supabase = await createClient();
     const body = await req.json(); // Parse the JSON body
-    
+
     const {
       breakroomID, summary, responseData, correctness, missed
     } = body;
@@ -23,8 +23,8 @@ export async function POST(req: Request) {
     const { data, error } = await supabase
       .from('summaries')
       .insert([{
-        breakroom_details: breakroomID, 
-        student_input: summary, 
+        breakroom_details: breakroomID,
+        student_input: summary,
         model_summary: responseData,
         correctness: correctness,
         missed_points: missed

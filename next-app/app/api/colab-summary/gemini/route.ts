@@ -72,6 +72,8 @@ export async function POST(req: Request) {
       .select("*")
       .single();
 
+    console.log("saved data : ", data);
+
     if (error) {
       console.error("Error inserting data:", error);
       return NextResponse.json(
