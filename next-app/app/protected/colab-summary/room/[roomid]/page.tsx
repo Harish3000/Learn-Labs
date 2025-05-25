@@ -7,13 +7,11 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
-import { toast } from "react-toastify";
-import { use } from "react";
+import { useSearchParams } from "next/navigation";
 
-const Room = ({ params }: { params: Promise<{ roomid: string }> }) => {
+const Room = ({ params }: { params: { roomid: string } }) => {
   const { fullName } = useUser();
-  const { roomid } = use(params);
-  const roomID = roomid;
+  const roomID = params.roomid;
   const meetingContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [meetingEnded, setMeetingEnded] = useState(false);
