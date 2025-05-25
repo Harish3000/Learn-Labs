@@ -48,7 +48,7 @@ export async function PATCH(req: Request) {
       .update({ breakroom_id: breakroomID })
       .in('id', ids);
 
-      console.log("students devided into groups successfully...");
+    console.log("students devided into groups successfully...");
 
     if (error) {
       console.error('Supabase Error:', error.message);

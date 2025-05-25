@@ -12,7 +12,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const summaryID = url.searchParams.get("summaryID");
 
-    console.log("summaryID : ",summaryID);
+    console.log("summaryID : ", summaryID);
 
     if (!summaryID) {
       return NextResponse.json({ error: "Missing required parameters." }, { status: 400 });
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       .select("*")
       .eq("id", summaryID);
 
-      console.log("data : ",data);
+    console.log("data : ", data);
 
     if (error) {
       console.error("Error fetching Summary Data:", error);
@@ -56,6 +56,8 @@ export async function POST(req: Request) {
       }])
       .select("*")
       .single();
+
+    console.log("saved data : ", data);
 
     if (error) {
       console.error("Error inserting data:", error);

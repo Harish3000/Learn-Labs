@@ -55,23 +55,23 @@ export default function Home() {
       const updatedUsers: BreakroomAttendance[] = [];
       const studentSet = new Set<number>(); // Keep track of assigned students
       let roomNumber = 1;
-    
+
       for (let i = 0; i < shuffledStudents.length; i += 4) {
         const group = shuffledStudents.slice(i, i + 4);
         const breakroomID = `BRK${String(roomNumber).padStart(3, "0")}`;
-    
+
         group.forEach((student) => {
           if (!studentSet.has(student.id)) {
             updatedUsers.push({ ...student, breakroom_id: breakroomID });
             studentSet.add(student.id);
           }
         });
-    
+
         roomNumber++;
       }
-    
+
       return updatedUsers;
-    };    
+    };
 
     const fetchBreakRoomData = async () => {
       try {
@@ -103,7 +103,7 @@ export default function Home() {
               "Content-Type": "application/json",
             },
           });
-  
+
           const updatedbreakroomdata = await response.json();
           localStorage.setItem("breakroomData", JSON.stringify(updatedbreakroomdata));
         }

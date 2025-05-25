@@ -8,7 +8,6 @@ import {
   HarmBlockThreshold,
 } from "@google/generative-ai";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 
@@ -18,24 +17,21 @@ const API_KEY = process.env.NEXT_PUBLIC_COLLAB_SUMMARY_GEMINI_API_KEY!;
 export default function Home() {
   const [summary, setSummary] = useState<string>("");
   const [responseData, setResponseData] = useState<string>("");
-  const [correctness, setCorrectness] = useState<string>("");
-  const [missed, setMissed] = useState<string>("");
   const [breakroom_id, setBreakroomID] = useState<number>(-1);
   const [breakroomData, setBreakroomData] = useState<any[]>([]);
-  const [breakroomAttendanceDataID, setBreakroomAttendanceDataID] = useState<any>();
   const [isFetched, setIsFetched] = useState(false);
-  const router = useRouter();
   const [userID, setUserID] = useState("");
-
-  // updateCorrectnessAndMissedPoints
-  const [summaryCorrectness, setSummaryCorrectness] = useState<any>();
-  const [summaryMissedPoints, setSummaryMissedPoints] = useState<any>();
   const [videoID, setVideoID] = useState<any>();
   const [lectureID, setLectureID] = useState<any>();
-  const [lectureContent, setLectureContent] = useState<any>();
+  const router = useRouter();
+
+  const [finalSummary, setFinalSummary] = useState<string>("");
+  const [score, setScore] = useState<number>(0);
+  const [missingPoints, setMissingPoints] = useState<string[]>([]);
+  const [breakroomAttendanceDataID, setBreakroomAttendanceDataID] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const [lectureText, setLectureText] = useState<any>();
-  const [studentSummary, setStudentSummary] = useState<any>();
-  const [finalSummary, setFinalSummary] = useState<any>();
+  const [lectureContent, setLectureContent] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,29 +49,28 @@ export default function Home() {
         }
 
         const storedData = localStorage.getItem("breakroomData");
-
         if (storedData) {
           const parsedData = JSON.parse(storedData);
           setBreakroomData(parsedData);
 
-          for (const room of breakroomData) {
-            if (room.student_id === userID) {
-              setBreakroomID(room.breakroom_id);
-              setVideoID(room.video_id);
-              setLectureID(room.lecture_id);
-              break;
-            }
+          const matchedRoom = parsedData.find((room: any) => room.student_id === userID);
+          if (matchedRoom) {
+            setBreakroomID(matchedRoom.breakroom_id);
+            setVideoID(matchedRoom.video_id);
+            setLectureID(matchedRoom.lecture_id);
+
+            localStorage.setItem("videoID", matchedRoom.video_id);
+            localStorage.setItem("lectureID", matchedRoom.lecture_id);
           }
         }
 
-        const storedDataAttendance = localStorage.getItem("breakroomAttendance");
-        if (storedDataAttendance) {
-          const parsedDataAttendance = JSON.parse(storedDataAttendance);
-          setBreakroomAttendanceDataID(parsedDataAttendance.id);
+        const storedAttendance = localStorage.getItem("breakroomAttendance");
+        if (storedAttendance) {
+          const parsedAttendance = JSON.parse(storedAttendance);
+          setBreakroomAttendanceDataID(parsedAttendance.id);
         }
-
       } catch (error) {
-        console.error("Error decoding token", error);
+        console.error("Error decoding token or fetching local data", error);
       }
     };
 
@@ -83,42 +78,28 @@ export default function Home() {
   }, [userID]);
 
   useEffect(() => {
-    if (breakroom_id != -1 && userID != '' && !isFetched) {
-      const fetchBreakroomDetails = async () => {
+    const fetchBreakroomDetails = async () => {
+      if (breakroom_id !== -1 && userID && !isFetched) {
         try {
-          const response = await fetch(`/api/colab-summary/session?breakroomID=${breakroom_id}&userID=${userID}`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch breakroom details.");
-          }
-
+          const response = await fetch(`/api/colab-summary/session?breakroomID=${breakroom_id}&userID=${userID}`);
           const data = await response.json();
           setBreakroomID(data.id);
           setIsFetched(true);
         } catch (error) {
           console.error("Error fetching breakroom details:", error);
         }
-      };
+      }
+    };
 
-      fetchBreakroomDetails();
-    }
+    fetchBreakroomDetails();
   }, [breakroom_id, userID]);
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setSummary(event.target.value);
-  };
 
   const storeSummaryInDatabase = async (
     summary: string,
-    responseData: string,
-    correctness: string,
-    missed: string,
-    breakroomAttendanceDataID: any,
+    responseData: any,
+    correctness: number,
+    missed: string[],
+    breakroomAttendanceDataID: any
   ) => {
     try {
       const response = await fetch("/api/colab-summary/gemini", {
@@ -131,227 +112,140 @@ export default function Home() {
           responseData,
           correctness,
           missed,
-          breakroomAttendanceDataID
+          breakroomAttendanceDataID,
         }),
       });
 
       if (!response.ok) {
         console.error("Failed to store summary in database");
-        return response;
-      } else {
-        return response;
+        return null;
       }
+      const result = await response.json();
+
+      // Save the ID of the stored summary in localStorage
+      const savedSummaryId = result?.data?.id;
+      if (savedSummaryId) {
+        localStorage.setItem("summaryID", savedSummaryId.toString());
+      }
+
+      return result;
     } catch (error) {
       console.error("Error storing summary:", error);
+      return null;
     }
   };
 
-  const handleSubmit = async () => {
-    const generatedResponse = await runChat(summary);
-
-    if (!generatedResponse) {
-      console.error("Generated response is empty.");
-      return;
-    }
-
-    if (breakroom_id != -1) {
-      const response = await storeSummaryInDatabase(summary, generatedResponse, correctness, missed, breakroomAttendanceDataID);
-      const submittedSummary = await response?.json();
-      const lectureData = await fetchLectureData();
-      await updateCorrectnessAndMissedPoints(submittedSummary.data);
-
-      setTimeout(() => {
-        // setLoading(false);
-        router.push(`/protected/colab-summary/dashboard`);
-      }, 25000);
-    }
+  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setSummary(event.target.value);
   };
 
-  const runChat = async (prompt: string) => {
+  const runChat = async (userInput: string, lectureContent: string) => {
     try {
       const genAI = new GoogleGenerativeAI(API_KEY);
       const model = genAI.getGenerativeModel({ model: MODEL_NAME });
-
-      const generationConfig = {
-        temperature: 1,
-        topK: 1,
-        topP: 1,
-        maxOutputTokens: 2048,
-      };
-
-      const chat = model.startChat({
-        generationConfig,
-        history: [
-          {
-            role: "user",
-            parts: [{ text: prompt }],
-          },
-        ],
-      });
-
-      const result = await chat.sendMessage(prompt);
-      const response = result.response.text();
-
-      setResponseData(response);
-      return response;
-    } catch (error) {
-      console.error("Error running chat:", error);
-      return "";
-    }
-  };
-
-  const runChat2 = async (prompt: string) => {
-    try {
-      const genAI = new GoogleGenerativeAI(API_KEY);
-      const model = genAI.getGenerativeModel({ model: MODEL_NAME });
-
-      const generationConfig = {
-        temperature: 1,
-        topK: 1,
-        topP: 1,
-        maxOutputTokens: 2048,
-      };
-
-      const chat = model.startChat({
-        generationConfig,
-        history: [
-          {
-            role: "user",
-            parts: [{ text: prompt }],
-          },
-        ],
-      });
-
-      const result = await chat.sendMessage(prompt);
-      const response = result.response.text();
-
-      return response;
-    } catch (error) {
-      console.error("Error running chat:", error);
-      return "";
-    }
-  };
-
-  const runChatForDetailedAnalysis = async (studentSummary: string, lectureText: string) => {
-    console.log("running chat...");
-    try {
-      const genAI = new GoogleGenerativeAI(API_KEY);
-      const model = genAI.getGenerativeModel({ model: MODEL_NAME });
-
-      const generationConfig = {
-        temperature: 0.7,
-        topK: 50,
-        topP: 0.85,
-        maxOutputTokens: 2048,
-      };
 
       const prompt = `
-The goal is to compare the student's summary of a lecture with the original lecture content.
-- Analyze the summary for correctness and completeness.
-- Check if the summary accurately represents all key points of the lecture.
-- Highlight major points the student missed.
+        You are an AI assistant. 
 
-**Lecture Content:**
-"${lectureText}"
+        Given the lecture content and a student's summary input, do the following:
 
-**Student's Summary:**
-"${studentSummary}"
+        1. Generate a final comprehensive summary that accurately covers the main points from the lecture content.
+        2. Score the student's input for correctness on a scale from 0 to 100.
+        3. Identify exactly three key points that are missing or underrepresented in the student's input compared to the lecture content.
 
-Please respond with a JSON object in the following format:
-{
-  "correctness_score": percentage_value,   // Percentage of correctness, ranging from 0 to 100
-  "missing_points": [
-    "missing_point_1",  // Example: 'The lecture discussed the types of operating systems.'
-    "missing_point_2"   // Example: 'The summary did not mention the system's structure in detail.'
-  ]
-}
-`;
+        Return your response in the following strict JSON format **ONLY** (no extra text):
 
-      // Start the chat session with the prompt
-      const chat = model.startChat({
-        generationConfig,
-        history: [
+        {
+          "final_summary": "<final comprehensive summary here>",
+          "score": <correctness score as a number between 0 and 100>,
+          "missing_points": [
+            "<missing point 1>",
+            "<missing point 2>",
+            "<missing point 3>"
+          ]
+        }
+
+        lecture_content:
+        ${lectureContent}
+
+        student_input:
+        ${userInput}
+        `;
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 1,
+          topK: 1,
+          topP: 1,
+          maxOutputTokens: 2048,
+        },
+        safetySettings: [
           {
-            role: "user",
-            parts: [{ text: prompt }],
+            category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+            threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+          },
+
+          {
+            category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+            threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
           },
         ],
       });
+      const response = await result.response.text();
+      // Find the first and last curly braces to extract JSON substring
+      const jsonStart = response.indexOf('{');
+      const jsonEnd = response.lastIndexOf('}');
 
-      const result = await chat.sendMessage(prompt);
-      var response = result.response.text();
+      let parsedData = null;
 
-      console.log("Gemini response:", response);
-      response = response.replace(/\/\/.*$/gm, '').trim();
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        const jsonString = response.substring(jsonStart, jsonEnd + 1);
+        try {
+          parsedData = JSON.parse(jsonString);
+          setResponseData(parsedData);
+          console.log("Parsed JSON response:", parsedData);
+          // setFinalSummary(parsedData.final_summary || "");
+          // setScore(typeof parsedData.score === "number" ? parsedData.score : 0);
+          // setMissingPoints(Array.isArray(parsedData.missing_points) ? parsedData.missing_points : []);
 
-      // Check if the response starts with the expected JSON structure
-      try {
-        const parsedResponse = JSON.parse(response);
-        console.log("parsedResponse : ",parsedResponse);
-        setSummaryCorrectness(parsedResponse.correctness_score);
-        setSummaryMissedPoints(parsedResponse.missing_points);
+          localStorage.setItem(
+            "summaryAnalysis",
+            JSON.stringify({
+              finalSummary: parsedData.final_summary || "",
+              score: parsedData.score || 0,
+              missingPoints: parsedData.missing_points || [],
+            })
+          );
 
-      } catch (jsonError) {
-        console.error("Error parsing Gemini response:", jsonError);
-        console.log("Full response received:", response);
+        } catch (error) {
+          // console.error("Failed to parse JSON:", error);
+          // setResponseData(response);
+        }
+      } else {
+        // console.warn("No JSON found in response");
+        // setResponseData(response);
       }
 
       return response;
     } catch (error) {
-      console.error("Error running chat for detailed analysis:", error);
+      console.error("Error running chat:", error);
       return "";
     }
   };
 
-  async function updateCorrectnessAndMissedPoints(data: any) {
-    setStudentSummary(data.student_input);
-
-    if (lectureText && studentSummary) {
-      // Proceed with the chat analysis only after both lectureText and studentSummary are available
-      const generatedResponse = await runChatForDetailedAnalysis(studentSummary, lectureText);
-      if (generatedResponse) {
-        const finalSummary = await runChat2(lectureText);
-        setFinalSummary(finalSummary);
-        localStorage.setItem("finalSummary", JSON.stringify(finalSummary));
-        localStorage.setItem("summaryID", JSON.stringify(data.id));
-
-        if (summaryCorrectness && summaryMissedPoints) {
-          console.log("updating...");
-          await updateSummary(data.id, summaryCorrectness, summaryMissedPoints);
-        }
+  useEffect(() => {
+    const storedSummaryAnalysis = localStorage.getItem("summaryAnalysis");
+    if (storedSummaryAnalysis) {
+      try {
+        const parsedAnalysis = JSON.parse(storedSummaryAnalysis);
+        setFinalSummary(parsedAnalysis.finalSummary || "");
+        setScore(parsedAnalysis.score || 0);
+        setMissingPoints(parsedAnalysis.missingPoints || []);
+      } catch (err) {
+        console.error("Failed to parse summaryAnalysis from localStorage:", err);
       }
-    } else {
-      console.error("Lecture content or student summary is not available.");
     }
-  }
-
-  const updateSummary = async (id: any, summaryCorrectness: string, summaryMissedPoints: string) => {
-    console.log("updating summary...");
-    console.log("summary correctness : ", summaryCorrectness);
-    console.log("summary missing points : ", summaryMissedPoints);
-    try {
-      const response = await fetch("/api/colab-summary/lecturecontent", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: id,
-          summaryCorrectness: summaryCorrectness,
-          summaryMissedPoints: summaryMissedPoints
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Error updating Summary:", data.error);
-      }
-
-    } catch (error) {
-      console.error("Error making API call:", error);
-    }
-  };
+  }, []);
 
   const fetchLectureData = async () => {
     try {
@@ -368,7 +262,7 @@ Please respond with a JSON object in the following format:
 
       const data = await response.json();
 
-      console.log("lecture data : ",data);
+      // console.log("lecture data : ",data);
 
       if (Array.isArray(data)) {
         const concatenatedText = data
@@ -378,15 +272,16 @@ Please respond with a JSON object in the following format:
           .replace(/\d+ms:\s*/g, '')
           .replace(/\s*\|\s*/g, '');
 
-        console.log("Lecture content : ",concatenatedText);
+        console.log("Lecture content : ", concatenatedText);
 
         setLectureText(concatenatedText);
+        localStorage.setItem("lectureContent", concatenatedText);
       } else {
         console.error("Invalid data format:", data);
       }
 
-      setLectureContent(data);
-      localStorage.setItem("lectureContent", JSON.stringify(lectureContent));
+      // setLectureContent(data);
+      // localStorage.setItem("lectureContent", JSON.stringify(data));
 
     } catch (error) {
       console.error("Error fetching breakroom details:", error);
@@ -394,8 +289,60 @@ Please respond with a JSON object in the following format:
     }
   };
 
+  const handleSubmit = async () => {
+    setLoading(true);
+    const generatedResponse = await runChat(summary, lectureContent);
+    const storedSummaryAnalysis = localStorage.getItem("summaryAnalysis");
+
+    let parsedSummary = null;
+
+    if (storedSummaryAnalysis) {
+      parsedSummary = JSON.parse(storedSummaryAnalysis);
+    }
+
+    if (generatedResponse) {
+      toast.success("Summary processed!");
+
+      // Store in DB after processing
+      if (breakroomAttendanceDataID && parsedSummary) {
+        await storeSummaryInDatabase(
+          summary,
+          parsedSummary.finalSummary,
+          score,
+          missingPoints,
+          breakroomAttendanceDataID
+        );
+
+        const lectureData = await fetchLectureData();
+
+        setTimeout(() => {
+          setLoading(false);
+          router.push(`/protected/colab-summary/dashboard`);
+        }, 25000);
+
+      } else {
+        console.warn("No breakroomAttendanceDataID available to store summary");
+        console.log("Running chat...");
+
+      }
+
+    } else {
+      toast.error("Failed to process summary.");
+    }
+  };
+
   return (
     <main>
+
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 text-white text-xl font-semibold">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin w-10 h-10 mb-4 border-4 border-white border-t-transparent rounded-full"></div>
+            <p>Hang on.. getting model response..</p>
+          </div>
+        </div>
+      )}
+
       <h1 className="text-4xl font-semibold text-gray-800 mb-6 text-center">
         Submit your summary here
       </h1>
@@ -408,12 +355,14 @@ Please respond with a JSON object in the following format:
           className="p-6 border rounded-lg w-full text-black bg-white mb-6 shadow-md 
      focus:outline-none focus:ring-2 focus:ring-green-500 resize-none 
      h-[500px] max-w-full"
+          disabled={loading}
         />
         <button
           onClick={handleSubmit}
           className="p-4 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-all duration-200 text-lg"
+          disabled={loading}
         >
-          Submit
+          {loading ? "Processing..." : "Submit"}
         </button>
       </div>
     </main>

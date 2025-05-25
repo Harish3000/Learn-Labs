@@ -8,10 +8,12 @@ import Swal from "sweetalert2";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
+import { use } from "react";
 
-const Room = ({ params }: { params: { roomid: string } }) => {
+const Room = ({ params }: { params: Promise<{ roomid: string }> }) => {
   const { fullName } = useUser();
-  const roomID = params.roomid;
+  const { roomid } = use(params);
+  const roomID = roomid;
   const meetingContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [meetingEnded, setMeetingEnded] = useState(false);
@@ -20,63 +22,63 @@ const Room = ({ params }: { params: { roomid: string } }) => {
   const [isFetched, setIsFetched] = useState(false);
 
   useEffect(() => {
-  const fetchUserDataAndBreakroom = async () => {
-    try {
-      let token = Cookies.get("sb-mmvkkgidcuocgkvxjljd-auth-token");
-      if (!token) {
-        console.warn("Token not found in cookies");
-        return;
-      }
-
-      if (token.startsWith("base64-")) {
-        token = token.replace("base64-", "");
-      }
-
-      const decodedToken = jwtDecode(atob(token));
-      const userId = decodedToken?.sub ?? "";
-      setUserID(userId);
-
-      const storedData = localStorage.getItem("breakroomData");
-      let breakroomIdFromStorage: string | null = null;
-
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        const userBreakroom = parsedData.find(
-          (room: any) => room.student_id === userId
-        );
-
-        if (userBreakroom) {
-          breakroomIdFromStorage = userBreakroom.id;
-          setBreakroomID(userBreakroom.id);
+    const fetchUserDataAndBreakroom = async () => {
+      try {
+        let token = Cookies.get("sb-mmvkkgidcuocgkvxjljd-auth-token");
+        if (!token) {
+          console.warn("Token not found in cookies");
+          return;
         }
-      }
 
-      if (breakroomIdFromStorage && userId && !isFetched) {
-        const response = await fetch(
-          `/api/colab-summary/session?breakroomID=${breakroomIdFromStorage}&userID=${userId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
+        if (token.startsWith("base64-")) {
+          token = token.replace("base64-", "");
+        }
+
+        const decodedToken = jwtDecode(atob(token));
+        const userId = decodedToken?.sub ?? "";
+        setUserID(userId);
+
+        const storedData = localStorage.getItem("breakroomData");
+        let breakroomIdFromStorage: string | null = null;
+
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          const userBreakroom = parsedData.find(
+            (room: any) => room.student_id === userId
+          );
+
+          if (userBreakroom) {
+            breakroomIdFromStorage = userBreakroom.id;
+            setBreakroomID(userBreakroom.id);
           }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch breakroom details.");
         }
 
-        const data = await response.json();
-        setBreakroomID(data[0].id);
-        setIsFetched(true);
+        if (breakroomIdFromStorage && userId && !isFetched) {
+          const response = await fetch(
+            `/api/colab-summary/session?breakroomID=${breakroomIdFromStorage}&userID=${userId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch breakroom details.");
+          }
+
+          const data = await response.json();
+          setBreakroomID(data[0].id);
+          setIsFetched(true);
+        }
+
+      } catch (error) {
       }
+    };
 
-    } catch (error) {
-    }
-  };
-
-  fetchUserDataAndBreakroom();
-}, []);
+    fetchUserDataAndBreakroom();
+  }, []);
 
   // Function to store the URL in the database
   const storeUrlInDatabase = async (
@@ -95,7 +97,7 @@ const Room = ({ params }: { params: { roomid: string } }) => {
         body: JSON.stringify({ url, name, roomID, userID, breakroom_id: breakroomID }),
       });
 
-      const responseDataRow = await response.json();  
+      const responseDataRow = await response.json();
       localStorage.setItem("breakroomAttendance", JSON.stringify(responseDataRow.data));
 
       if (!response.ok) {
@@ -106,81 +108,76 @@ const Room = ({ params }: { params: { roomid: string } }) => {
     }
   };
 
-  useEffect(() => {
-    if (!userID || !breakroomID) return;
+  const zegoRef = useRef<any>(null);
 
-    const appID = parseInt(process.env.NEXT_PUBLIC_ZEGO_APP_ID!);
-    const serverSecret = process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET!;
+useEffect(() => {
+  if (!userID || !breakroomID || !meetingContainerRef.current || meetingEnded) return;
 
-    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-      appID,
-      serverSecret,
-      roomID,
-      userID,
-      fullName || "user" + Date.now(),
-      720
-    );
+  const appID = parseInt(process.env.NEXT_PUBLIC_ZEGO_APP_ID!);
+  const serverSecret = process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET!;
+  const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+    appID,
+    serverSecret,
+    roomID,
+    userID,
+    fullName || "user" + Date.now(),
+    720
+  );
 
-    const zp = ZegoUIKitPrebuilt.create(kitToken);
+  const zp = ZegoUIKitPrebuilt.create(kitToken);
+  zegoRef.current = zp;
 
-    const shareableLink =
-      window.location.protocol +
-      "//" +
-      window.location.host +
-      window.location.pathname +
-      "?roomID=" +
-      roomID;
+  // Join the room
+  zp.joinRoom({
+    container: meetingContainerRef.current,
+    sharedLinks: [
+      {
+        name: "Shareable link",
+        url: window.location.href,
+      },
+    ],
+    scenario: {
+      mode: ZegoUIKitPrebuilt.VideoConference,
+    },
+    maxUsers: 4,
+  });
 
-    storeUrlInDatabase(shareableLink, fullName, roomID, userID, breakroomID);
+  // Save attendance URL
+  const shareableLink =
+    window.location.protocol +
+    "//" +
+    window.location.host +
+    window.location.pathname +
+    "?roomID=" +
+    roomID;
 
-    const endMeetingTimer = setTimeout(() => {
-      setMeetingEnded(true);
-      Swal.fire({
-        title: "Meeting Ended",
-        text: "The meeting has ended. Thank you for joining!",
-        icon: "info",
-        confirmButtonText: "OK",
-      }).then(() => {
-        router.push("/protected/colab-summary/gemini");
-      });
-    }, 0.5 * 60 * 1000); // 10 minutes in milliseconds
+  storeUrlInDatabase(shareableLink, fullName, roomID, userID, breakroomID);
 
-    return () => {
-      clearTimeout(endMeetingTimer);
-      zp.destroy();
-    };
-  }, [roomID, userID, breakroomID]);
+  // End meeting timer
+  const endMeetingTimer = setTimeout(() => {
+    setMeetingEnded(true);
+    Swal.fire({
+      title: "Meeting Ended",
+      text: "The meeting has ended. Thank you for joining!",
+      icon: "info",
+      confirmButtonText: "OK",
+    }).then(() => {
+      router.push("/protected/colab-summary/gemini");
+    });
+  }, 1 * 60 * 1000); // 1 minute
 
-  useEffect(() => {
-    if (meetingContainerRef.current && !meetingEnded && userID) {
-      const appID = parseInt(process.env.NEXT_PUBLIC_ZEGO_APP_ID!);
-      const serverSecret = process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET!;
-      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-        appID,
-        serverSecret,
-        roomID,
-        userID,
-        fullName || "user" + Date.now(),
-        720
-      );
-
-      const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-      zp.joinRoom({
-        container: meetingContainerRef.current,
-        sharedLinks: [
-          {
-            name: "Shareable link",
-            url: window.location.href,
-          },
-        ],
-        scenario: {
-          mode: ZegoUIKitPrebuilt.VideoConference,
-        },
-        maxUsers: 4,
-      });
+  // Clean up
+  return () => {
+    clearTimeout(endMeetingTimer);
+    if (zegoRef.current) {
+      try {
+        zegoRef.current.destroy();
+      } catch (err) {
+        console.warn("Error destroying Zego instance:", err);
+      }
     }
-  }, [roomID, fullName, meetingEnded, userID]);
+  };
+}, [roomID, fullName, meetingEnded, userID, breakroomID]);
 
   return (
     <div>
